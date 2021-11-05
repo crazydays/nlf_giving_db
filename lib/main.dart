@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'db/giving_database.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,6 +30,41 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  GivingDatabase database = GivingDatabase('zdatabase');
+  bool open = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    print('opening database');
+    database.open().asStream().listen((event) {
+      print('open done');
+      _opened();
+      print('/open done');
+    });
+  }
+
+  void _opened() {
+    print('opened database');
+    setState(() { open = true; });
+  }
+
+  @override
+  void deactivate() {
+    print('closing database');
+    database.close().asStream().listen((event) {
+      _closed();
+    });
+
+    super.deactivate();
+  }
+
+  void _closed() {
+    print('closed database');
+    setState(() { open = false; });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,6 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
+        child: Text('database is opened: ${open ? 'true' : 'false'}'),
       ),
     );
   }
