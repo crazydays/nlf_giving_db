@@ -25,7 +25,6 @@ CREATE TABLE $table (
   @override
   int? id;
   String? name;
-  bool? active;
 
   Account();
 
@@ -48,6 +47,10 @@ CREATE TABLE $table (
   }
 }
 
-class AccountProvider<Account> extends Provider {
+class AccountProvider extends Provider<Account> {
   AccountProvider(Database database) : super(database);
+
+  Future<Iterable<Account>> all() async {
+    return (await database.query(Account.table)).map((result) => Account.fromMap(result));
+  }
 }
