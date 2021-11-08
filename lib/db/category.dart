@@ -34,7 +34,7 @@ CREATE TABLE ${Category.table} (
   Category.fromMap(Map map) {
     id = map[columnId] as int?;
     name = map[columnName] as String?;
-    active = map[columnActive] == 1;
+    active = !(map[columnActive] == null || map[columnActive] == 0 || map[columnActive] == false);
   }
 
   @override
@@ -52,6 +52,10 @@ CREATE TABLE ${Category.table} (
   }
 }
 
-class CategoryProvider<Category> extends Provider {
+class CategoryProvider extends Provider<Category> {
   CategoryProvider(Database database) : super(database);
+
+  Future<Iterable<Category>> all() async {
+    return (await database.query(Category.table)).map((result) => Category.fromMap(result));
+  }
 }

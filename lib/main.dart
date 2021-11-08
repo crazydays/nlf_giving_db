@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'db/giving_database.dart';
+import 'category_page.dart';
+import 'category_create_page.dart';
+import 'category_edit_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,6 +14,30 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      onGenerateRoute: (settings) {
+        if (settings.name == CategoryPage.route) {
+          final arguments = settings.arguments as CategoryPageArguments;
+          return MaterialPageRoute(
+            builder: (context) {
+              return CategoryPage(database: arguments.database);
+            }
+          );
+        } else if (settings.name == CategoryCreatePage.route) {
+          final arguments = settings.arguments as CategoryCreatePageArguments;
+          return MaterialPageRoute(
+              builder: (context) {
+                return CategoryCreatePage(database: arguments.database);
+              }
+          );
+        } else if (settings.name == CategoryEditPage.route) {
+          final arguments = settings.arguments as CategoryEditPageArguments;
+          return MaterialPageRoute(
+              builder: (context) {
+                return CategoryEditPage(database: arguments.database, record: arguments.record);
+              }
+          );
+        }
+      },
       title: 'New Life Fellowship Giving Database',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -37,32 +64,28 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
-    print('opening database');
     database.open().asStream().listen((event) {
-      print('open done');
       _opened();
-      print('/open done');
     });
   }
 
   void _opened() {
-    print('opened database');
     setState(() { open = true; });
   }
 
   @override
-  void deactivate() {
-    print('closing database');
+  void dispose() {
     database.close().asStream().listen((event) {
       _closed();
     });
 
-    super.deactivate();
+    super.dispose();
   }
 
   void _closed() {
-    print('closed database');
-    setState(() { open = false; });
+    setState(() {
+      open = false;
+    });
   }
 
   @override
@@ -70,10 +93,29 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          PopupMenuButton(
+            icon: Icon(Icons.more_vert),
+            onSelected: (index) {
+              switch (index) {
+                case 'category':
+                  Navigator.pushNamed(context, CategoryPage.route, arguments: CategoryPageArguments(database));
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                child: Text('Categories'),
+                value: 'category'
+              ),
+            ],
+          ),
+        ],
       ),
-      body: Center(
-        child: Text('database is opened: ${open ? 'true' : 'false'}'),
-      ),
+      body: Column(
+        children: <Widget>[
+        ],
+      )
     );
   }
 }

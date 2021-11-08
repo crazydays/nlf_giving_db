@@ -18,13 +18,11 @@ class GivingDatabase {
   GivingDatabase(this.filename);
 
   void _setupProviders() {
-    print('giving_database setting up providers');
     providers[Category] = CategoryProvider(database);
     providers[Account] = AccountProvider(database);
     providers[Person] = PersonProvider(database);
     providers[Address] = AddressProvider(database);
     providers[Donation] = DonationProvider(database);
-    print('giving_database setup providers');
   }
 
   Provider getProvider(Type type) {
@@ -40,9 +38,7 @@ class GivingDatabase {
   }
 
   Future<void> open() async {
-    print('giving_database open');
     database = await openDatabase(filename, version: 1, onCreate: onCreate);
-    print('giving_database opened');
     _setupProviders();
     return Future(() {});
   }
