@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
         actions: [
           PopupMenuButton(
-            icon: Icon(Icons.more_vert),
+            icon: const Icon(Icons.more_vert),
             onSelected: (index) {
               switch (index) {
                 case 'category':
@@ -104,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
               }
             },
             itemBuilder: (context) => [
-              PopupMenuItem(
+              const PopupMenuItem(
                 child: Text('Categories'),
                 value: 'category'
               ),
@@ -113,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       body: Column(
-        children: <Widget>[
+        children: const <Widget>[
         ],
       )
     );
