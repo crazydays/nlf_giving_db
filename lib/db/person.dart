@@ -7,6 +7,7 @@ class Person implements Model {
   static const String table = 'people';
   static const String columnId = '_id';
   static const String columnAccountId = Account.columnIdFk;
+  static const String columnMaster = 'master';
   static const String columnFirstName = 'first_name';
   static const String columnLastName = 'last_name';
 
@@ -15,6 +16,7 @@ class Person implements Model {
 CREATE TABLE $table (
   $columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
   $columnAccountId INTEGER NOT NULL,
+  $columnMaster BOOLEAN NOT NULL CHECK ($columnMaster IN (0, 1)),
   $columnFirstName TEXT NOT NULL,
   $columnLastName TEXT NOT NULL
 )''');
@@ -28,6 +30,7 @@ CREATE TABLE $table (
   @override
   int? id;
   int? accountId;
+  bool? master;
   String? firstName;
   String? lastName;
 
@@ -36,6 +39,7 @@ CREATE TABLE $table (
   Person.fromMap(Map map) {
     id = map[columnId] as int?;
     accountId = map[columnAccountId] as int?;
+    master = !(map[columnMaster] == null || map[columnMaster] == 0 || map[columnMaster] == false);
     firstName = map[columnFirstName] as String?;
     lastName = map[columnLastName] as String?;
   }
@@ -44,6 +48,7 @@ CREATE TABLE $table (
   Map<String, Object?> toMap() {
     final map = <String, Object?> {
       columnAccountId: accountId,
+      columnMaster: master,
       columnFirstName: firstName,
       columnLastName: lastName
     };
@@ -56,6 +61,22 @@ CREATE TABLE $table (
   }
 }
 
-class PersonProvider<Person> extends Provider {
+class PersonProvider extends Provider<Person> {
   PersonProvider(Database database) : super(database);
+
+  Future<Iterable<Person>> allForAccount(Account account) async {
+    return (await database.query(
+        Person.table,
+        where: '${Person.columnAccountId} = ?',
+        whereArgs: [account.id],
+        orderBy: '${Person.columnMaster} DESC, ${Person.columnFirstName} ASC')).map((result) => Person.fromMap(result));
+  }
+
+  Future<bool> existingMasterForAccount(Account account) async {
+    return (await database.query(
+        Person.table,
+        where: '${Person.columnAccountId} = ? AND ${Person.columnMaster} = ?',
+        whereArgs: [account.id, 1])
+    ).isNotEmpty;
+  }
 }

@@ -12,10 +12,10 @@ class Category extends Model {
 
   static Future<void> onCreate(Database database, int version) async {
     return database.execute('''
-CREATE TABLE ${Category.table} (
-  ${Category.columnId} INTEGER PRIMARY KEY AUTOINCREMENT, 
-  ${Category.columnName} TEXT NOT NULL UNIQUE,
-  ${Category.columnActive} BOOLEAN NOT NULL CHECK (${Category.columnActive} IN (0, 1))
+CREATE TABLE $table (
+  $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
+  $columnName TEXT NOT NULL UNIQUE,
+  $columnActive BOOLEAN NOT NULL CHECK ($columnActive IN (0, 1))
 )''');
   }
 

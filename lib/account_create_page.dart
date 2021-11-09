@@ -22,7 +22,6 @@ class AccountCreatePage extends StatefulWidget {
 class _AccountCreateState extends State<AccountCreatePage> {
   late AccountProvider _provider;
   late TextEditingController _nameController;
-  late bool _isActive;
 
   @override
   void initState() {
@@ -30,7 +29,6 @@ class _AccountCreateState extends State<AccountCreatePage> {
 
     _provider = widget.database.getProvider(Account) as AccountProvider;
     _nameController = TextEditingController();
-    _isActive = false;
   }
 
   @override

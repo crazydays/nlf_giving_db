@@ -51,6 +51,9 @@ class AccountProvider extends Provider<Account> {
   AccountProvider(Database database) : super(database);
 
   Future<Iterable<Account>> all() async {
-    return (await database.query(Account.table)).map((result) => Account.fromMap(result));
+    return (await database.query(
+        Account.table,
+        orderBy: '${Account.columnName} ASC')).map((result) => Account.fromMap(result));
   }
+
 }
