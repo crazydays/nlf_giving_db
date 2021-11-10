@@ -4,6 +4,7 @@ import 'db/account.dart';
 import 'account_create_page.dart';
 import 'account_edit_page.dart';
 import 'person_page.dart';
+import 'address_page.dart';
 
 class AccountPageArguments {
   final GivingDatabase database;
@@ -96,6 +97,11 @@ class _AccountState extends State<AccountPage> {
                                     ),
                                     IconButton(
                                         onPressed: () {
+                                          Navigator.pushNamed(
+                                              context,
+                                              AddressPage.route,
+                                              arguments: AddressPageArguments(widget.database, _accounts[index])
+                                          );
                                         },
                                         icon: const Icon(Icons.house)
                                     ),

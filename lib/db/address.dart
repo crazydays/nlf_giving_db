@@ -72,6 +72,20 @@ CREATE TABLE $table (
   }
 }
 
-class AddressProvider<Address> extends Provider {
+class AddressProvider extends Provider<Address> {
   AddressProvider(Database database) : super(database);
+
+  Future<Address?> loadByAccount(Account account) async {
+    List<Map<String, Object?>> results = await database.query(
+        Address.table,
+        where: '${Address.columnAccountId} = ?',
+        whereArgs: [account.id]
+    );
+
+    if (results.isEmpty) {
+      return null;
+    } else {
+      return Address.fromMap(results.first);
+    }
+  }
 }

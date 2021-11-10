@@ -9,6 +9,7 @@ import 'category_edit_page.dart';
 import 'person_page.dart';
 import 'person_create_page.dart';
 import 'person_edit_page.dart';
+import 'address_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -61,6 +62,13 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(
               builder: (context) {
                 return PersonEditPage(database: arguments.database, account: arguments.account, record: arguments.record);
+              }
+          );
+        } else if (settings.name == AddressPage.route) {
+          final arguments = settings.arguments as AddressPageArguments;
+          return MaterialPageRoute(
+              builder: (context) {
+                return AddressPage(database: arguments.database, account: arguments.account);
               }
           );
         } else if (settings.name == CategoryPage.route) {
