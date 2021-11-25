@@ -1,30 +1,28 @@
 import 'package:flutter/material.dart';
-import 'db/giving_database.dart';
-import 'db/account.dart';
-import 'db/person.dart';
+import '../db/giving_database.dart';
+import '../db/account.dart';
+import '../db/person.dart';
 
-class PersonEditPageArguments {
+class PersonCreatePageArguments {
   final GivingDatabase database;
   final Account account;
-  final Person record;
 
-  PersonEditPageArguments(this.database, this.account, this.record);
+  PersonCreatePageArguments(this.database, this.account);
 }
 
-class PersonEditPage extends StatefulWidget {
-  static const route = '/person_edit_page';
+class PersonCreatePage extends StatefulWidget {
+  static const route = '/person_create_page';
 
   final GivingDatabase database;
   final Account account;
-  final Person record;
 
-  const PersonEditPage({ Key? key, required this.database, required this.account, required this.record }) : super(key: key);
+  const PersonCreatePage({ Key? key, required this.database, required this.account }) : super(key: key);
 
   @override
-  State<PersonEditPage> createState() => _PersonEditState();
+  State<PersonCreatePage> createState() => _PersonCreateState();
 }
 
-class _PersonEditState extends State<PersonEditPage> {
+class _PersonCreateState extends State<PersonCreatePage> {
   late PersonProvider _provider;
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
@@ -35,9 +33,15 @@ class _PersonEditState extends State<PersonEditPage> {
     super.initState();
 
     _provider = widget.database.getProvider(Person) as PersonProvider;
-    _firstNameController = TextEditingController(text: widget.record.firstName);
-    _lastNameController = TextEditingController(text: widget.record.lastName);
-    _isMaster = widget.record.master;
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
+    _isMaster = false;
+
+    _provider.existingMasterForAccount(widget.account).asStream().listen((result) {
+      setState(() {
+        _isMaster = !result;
+      });
+    });
   }
 
   @override
@@ -51,7 +55,7 @@ class _PersonEditState extends State<PersonEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Account Person: ${widget.account.name}'),
+        title: Text('Create Account Person: ${widget.account.name}'),
       ),
       body: Card(
           margin: const EdgeInsets.all(10.0),
@@ -110,10 +114,10 @@ class _PersonEditState extends State<PersonEditPage> {
                           ),
                           ElevatedButton(
                               onPressed: () {
-                                _update();
+                                _create();
                                 Navigator.pop(context);
                               },
-                              child: const Text('Update')
+                              child: const Text('Create')
                           ),
                         ],
                       )
@@ -125,15 +129,14 @@ class _PersonEditState extends State<PersonEditPage> {
     );
   }
 
-  void _update() async {
+  void _create() async {
     Person record = Person.fromMap({
-      Person.columnId: widget.record.id,
       Person.columnAccountId: widget.account.id,
       Person.columnMaster: _isMaster,
       Person.columnFirstName: _firstNameController.value.text,
       Person.columnLastName: _lastNameController.value.text,
     });
 
-    await _provider.update(record);
+    await _provider.insert(record);
   }
 }

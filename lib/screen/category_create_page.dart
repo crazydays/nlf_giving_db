@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'db/giving_database.dart';
-import 'db/category.dart';
+import '../db/giving_database.dart';
+import '../db/category.dart';
 
 class CategoryCreatePageArguments {
   final GivingDatabase database;

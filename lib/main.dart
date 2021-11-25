@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'db/giving_database.dart';
-import 'account_page.dart';
-import 'account_create_page.dart';
-import 'account_edit_page.dart';
-import 'category_page.dart';
-import 'category_create_page.dart';
-import 'category_edit_page.dart';
-import 'person_page.dart';
-import 'person_create_page.dart';
-import 'person_edit_page.dart';
-import 'address_page.dart';
+import 'screen/account_page.dart';
+import 'screen/account_create_page.dart';
+import 'screen/account_edit_page.dart';
+import 'screen/person_page.dart';
+import 'screen/person_create_page.dart';
+import 'screen/person_edit_page.dart';
+import 'screen/address_page.dart';
+import 'screen/category_page.dart';
+import 'screen/category_create_page.dart';
+import 'screen/category_edit_page.dart';
+import 'screen/donation_page.dart';
+import 'screen/donation_create_page.dart';
+import 'screen/donation_edit_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+      ChangeNotifierProvider(
+          create: (context) => null,
+          child: const MyApp()
+      )
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -92,6 +101,27 @@ class MyApp extends StatelessWidget {
                 return CategoryEditPage(database: arguments.database, record: arguments.record);
               }
           );
+        } else if (settings.name == DonationPage.route) {
+          final arguments = settings.arguments as DonationArguments;
+          return MaterialPageRoute(
+              builder: (context) {
+                return DonationPage(database: arguments.database);
+              }
+          );
+        } else if (settings.name == DonationCreatePage.route) {
+          final arguments = settings.arguments as DonationCreatePageArguments;
+          return MaterialPageRoute(
+              builder: (context) {
+                return DonationCreatePage(database: arguments.database);
+              }
+          );
+        } else if (settings.name == DonationEditPage.route) {
+          final arguments = settings.arguments as DonationEditPageArguments;
+          return MaterialPageRoute(
+              builder: (context) {
+                return DonationEditPage(database: arguments.database, record: arguments.record);
+              }
+          );
         }
       },
       title: 'New Life Fellowship Giving Database',
@@ -160,6 +190,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   case 'categories':
                     Navigator.pushNamed(context, CategoryPage.route, arguments: CategoryPageArguments(database));
                     break;
+                  case 'donations':
+                    Navigator.pushNamed(context, DonationPage.route, arguments: DonationArguments(database));
+                    break;
                 }
               },
               itemBuilder: (context) => [
@@ -170,6 +203,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 const PopupMenuItem(
                     child: Text('Categories'),
                     value: 'categories'
+                ),
+                const PopupMenuItem(
+                    child: Text('Donations'),
+                    value: 'donations'
                 ),
               ],
             ),

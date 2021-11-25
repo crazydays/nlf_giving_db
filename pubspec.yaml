@@ -31,7 +31,9 @@ dependencies:
     sdk: flutter
   sqflite:
   intl:
+  provider: ^6.0.0
   event: ^2.0.5
+  dropdown_search:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

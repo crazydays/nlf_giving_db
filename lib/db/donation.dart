@@ -18,7 +18,7 @@ class Donation implements Model {
   static const String columnAmount = 'amount';
   static const String columnCategoryId = Category.columnIdFk;
 
-  static final dateFormat = DateFormat('YYYY-MM-DD');
+  static final dateFormat = DateFormat('yyyy-MM-dd');
 
   static Future<void> onCreate(Database database, int version) async {
     return database.execute('''
@@ -54,30 +54,40 @@ CREATE TABLE $table (
   Donation();
 
   Donation.fromMap(Map map) {
+    print('Donation: $map');
     id = map[columnId] as int?;
     accountId = map[columnAccountId] as int?;
-    receivedDate = _parseDate(map[columnReceived] as String?);
-    itemDate = _parseDate(map[columnDate] as String?);
+    receivedDate = _parseDate(map[columnReceived]);
+    itemDate = _parseDate(map[columnDate]);
     checkNumber = map[columnCheck] as String?;
     achAccount = map[columnACH] as String?;
     achTrace = map[columnACHTrace] as String?;
-    amount = _parseMoney(map[columnAmount] as int?);
+    amount = _parseMoney(map[columnAmount]);
     categoryId = map[columnCategoryId] as int?;
   }
 
-  DateTime? _parseDate(String? value) {
+  DateTime? _parseDate(Object? value) {
     if (value == null) {
       return null;
+    } else if (value.runtimeType == DateTime) {
+      return value as DateTime;
+    } else if (value.runtimeType == String) {
+      return dateFormat.parse(value as String);
     } else {
-      return dateFormat.parse(value);
+      print('Unknown date time type: ${value.runtimeType}');
+      return null;
     }
   }
 
-  double? _parseMoney(int? value) {
+  double? _parseMoney(Object? value) {
     if (value == null) {
       return null;
+    } else if (value.runtimeType == String) {
+      return double.tryParse(value as String);
+    } else if (value.runtimeType == int) {
+      return (value as int) / 100.0;
     } else {
-      return value / 100.0;
+      return null;
     }
   }
 
@@ -118,6 +128,28 @@ CREATE TABLE $table (
   }
 }
 
-class DonationProvider<Donation> extends Provider {
+class DonationProvider extends Provider<Donation> {
   DonationProvider(Database database) : super(database);
+
+  Future<List<Map<String, Object?>>> all() async {
+    return database.rawQuery('''
+SELECT
+    D.${Donation.columnId},
+    D.${Donation.columnAccountId},
+    A.${Account.columnName} AS ${Account.table}_${Account.columnName},
+    D.${Donation.columnReceived},
+    D.${Donation.columnDate},
+    D.${Donation.columnCheck},
+    D.${Donation.columnACH},
+    D.${Donation.columnACHTrace},
+    D.${Donation.columnAmount},
+    D.${Donation.columnCategoryId},
+    C.${Category.columnName} AS ${Category.table}_${Category.columnName}
+  FROM
+    ${Donation.table} D
+    INNER JOIN ${Account.table} A ON A.${Account.columnId} = D.${Donation.columnAccountId}
+    INNER JOIN ${Category.table} C ON C.${Category.columnId} = D.${Donation.columnCategoryId}
+  ORDER BY D.${Donation.columnReceived} DESC, A.${Account.columnName}
+    ''');
+  }
 }

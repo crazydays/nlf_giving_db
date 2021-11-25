@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'db/giving_database.dart';
-import 'db/account.dart';
-import 'db/address.dart';
+import '../db/giving_database.dart';
+import '../db/account.dart';
+import '../db/address.dart';
 
 class AddressPageArguments {
   final GivingDatabase database;

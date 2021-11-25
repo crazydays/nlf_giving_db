@@ -55,7 +55,34 @@ CREATE TABLE $table (
 class CategoryProvider extends Provider<Category> {
   CategoryProvider(Database database) : super(database);
 
+  Future<Category?> select(int id) async {
+    return (await database.query(
+        Category.table,
+        where: '${Category.columnId} = ?',
+        whereArgs: [id]
+    )).map((result) => Category.fromMap(result)).first;
+  }
+
   Future<Iterable<Category>> all() async {
     return (await database.query(Category.table)).map((result) => Category.fromMap(result));
+  }
+
+  Future<List<Category>> active() async {
+    return (await database.query(
+        Category.table, where: '${Category.columnActive} = ?', whereArgs: [1])).map(
+            (result) => Category.fromMap(result)
+    ).toList();
+  }
+
+  Future<List<Category>> activeByFilter(String? filter) async {
+    if (filter == null || filter.isEmpty) {
+      return active();
+    } else {
+      return (await database.query(
+          Category.table,
+          where: '${Category.columnActive} = ? AND ${Category.columnName} LIKE ?',
+          whereArgs: [1, '%$filter%']
+      )).map((result) => Category.fromMap(result)).toList();
+    }
   }
 }

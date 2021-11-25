@@ -1,34 +1,38 @@
 import 'package:flutter/material.dart';
-import 'db/giving_database.dart';
-import 'db/account.dart';
+import '../db/giving_database.dart';
+import '../db/category.dart';
 
-class AccountCreatePageArguments {
+class CategoryEditPageArguments {
   final GivingDatabase database;
+  final Category record;
 
-  AccountCreatePageArguments(this.database);
+  CategoryEditPageArguments(this.database, this.record);
 }
 
-class AccountCreatePage extends StatefulWidget {
-  static const route = '/account_create_page';
+class CategoryEditPage extends StatefulWidget {
+  static const route = '/category_edit_page';
 
   final GivingDatabase database;
+  final Category record;
 
-  const AccountCreatePage({ Key? key, required this.database }) : super(key: key);
+  const CategoryEditPage({ Key? key, required this.database, required this.record }) : super(key: key);
 
   @override
-  State<AccountCreatePage> createState() => _AccountCreateState();
+  State<CategoryEditPage> createState() => _CategoryEditState();
 }
 
-class _AccountCreateState extends State<AccountCreatePage> {
-  late AccountProvider _provider;
+class _CategoryEditState extends State<CategoryEditPage> {
+  late CategoryProvider _provider;
   late TextEditingController _nameController;
+  late bool _isActive;
 
   @override
   void initState() {
     super.initState();
 
-    _provider = widget.database.getProvider(Account) as AccountProvider;
-    _nameController = TextEditingController();
+    _provider = widget.database.getProvider(Category) as CategoryProvider;
+    _nameController = TextEditingController(text: widget.record.name);
+    _isActive = widget.record.active == true;
   }
 
   @override
@@ -41,7 +45,7 @@ class _AccountCreateState extends State<AccountCreatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Account'),
+        title: const Text('Edit Category'),
       ),
       body: Card(
           margin: const EdgeInsets.all(10.0),
@@ -61,6 +65,22 @@ class _AccountCreateState extends State<AccountCreatePage> {
                   Container(
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
+                          children: <Widget>[
+                            const Text('Active'),
+                            Checkbox(
+                                value: _isActive,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _isActive = value!;
+                                  });
+                                }
+                            ),
+                          ]
+                      )
+                  ),
+                  Container(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           OutlinedButton(
@@ -71,10 +91,10 @@ class _AccountCreateState extends State<AccountCreatePage> {
                           ),
                           ElevatedButton(
                               onPressed: () {
-                                _create();
+                                _update();
                                 Navigator.pop(context);
                               },
-                              child: const Text('Create')
+                              child: const Text('Update')
                           ),
                         ],
                       )
@@ -86,11 +106,13 @@ class _AccountCreateState extends State<AccountCreatePage> {
     );
   }
 
-  void _create() async {
-    Account record = Account.fromMap({
-      Account.columnName: _nameController.value.text,
+  void _update() async {
+    Category record = Category.fromMap({
+      Category.columnId: widget.record.id,
+      Category.columnName: _nameController.value.text,
+      Category.columnActive: _isActive
     });
 
-    await _provider.insert(record);
+    await _provider.update(record);
   }
 }

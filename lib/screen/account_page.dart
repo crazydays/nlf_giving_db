@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'db/giving_database.dart';
-import 'db/account.dart';
+import '../db/giving_database.dart';
+import '../db/account.dart';
 import 'account_create_page.dart';
 import 'account_edit_page.dart';
 import 'person_page.dart';

@@ -1,38 +1,34 @@
 import 'package:flutter/material.dart';
-import 'db/giving_database.dart';
-import 'db/category.dart';
+import '../db/giving_database.dart';
+import '../db/account.dart';
 
-class CategoryEditPageArguments {
+class AccountCreatePageArguments {
   final GivingDatabase database;
-  final Category record;
 
-  CategoryEditPageArguments(this.database, this.record);
+  AccountCreatePageArguments(this.database);
 }
 
-class CategoryEditPage extends StatefulWidget {
-  static const route = '/category_edit_page';
+class AccountCreatePage extends StatefulWidget {
+  static const route = '/account_create_page';
 
   final GivingDatabase database;
-  final Category record;
 
-  const CategoryEditPage({ Key? key, required this.database, required this.record }) : super(key: key);
+  const AccountCreatePage({ Key? key, required this.database }) : super(key: key);
 
   @override
-  State<CategoryEditPage> createState() => _CategoryEditState();
+  State<AccountCreatePage> createState() => _AccountCreateState();
 }
 
-class _CategoryEditState extends State<CategoryEditPage> {
-  late CategoryProvider _provider;
+class _AccountCreateState extends State<AccountCreatePage> {
+  late AccountProvider _provider;
   late TextEditingController _nameController;
-  late bool _isActive;
 
   @override
   void initState() {
     super.initState();
 
-    _provider = widget.database.getProvider(Category) as CategoryProvider;
-    _nameController = TextEditingController(text: widget.record.name);
-    _isActive = widget.record.active == true;
+    _provider = widget.database.getProvider(Account) as AccountProvider;
+    _nameController = TextEditingController();
   }
 
   @override
@@ -45,7 +41,7 @@ class _CategoryEditState extends State<CategoryEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Category'),
+        title: const Text('Create Account'),
       ),
       body: Card(
           margin: const EdgeInsets.all(10.0),
@@ -65,22 +61,6 @@ class _CategoryEditState extends State<CategoryEditPage> {
                   Container(
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
-                          children: <Widget>[
-                            const Text('Active'),
-                            Checkbox(
-                                value: _isActive,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _isActive = value!;
-                                  });
-                                }
-                            ),
-                          ]
-                      )
-                  ),
-                  Container(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           OutlinedButton(
@@ -91,10 +71,10 @@ class _CategoryEditState extends State<CategoryEditPage> {
                           ),
                           ElevatedButton(
                               onPressed: () {
-                                _update();
+                                _create();
                                 Navigator.pop(context);
                               },
-                              child: const Text('Update')
+                              child: const Text('Create')
                           ),
                         ],
                       )
@@ -106,13 +86,11 @@ class _CategoryEditState extends State<CategoryEditPage> {
     );
   }
 
-  void _update() async {
-    Category record = Category.fromMap({
-      Category.columnId: widget.record.id,
-      Category.columnName: _nameController.value.text,
-      Category.columnActive: _isActive
+  void _create() async {
+    Account record = Account.fromMap({
+      Account.columnName: _nameController.value.text,
     });
 
-    await _provider.update(record);
+    await _provider.insert(record);
   }
 }

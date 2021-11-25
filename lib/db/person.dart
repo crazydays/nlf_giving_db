@@ -79,4 +79,24 @@ class PersonProvider extends Provider<Person> {
         whereArgs: [account.id, 1])
     ).isNotEmpty;
   }
+
+  Future<List<Person>> all() async {
+    return (await database.query(
+      Person.table,
+      orderBy: '${Person.columnFirstName}, ${Person.columnFirstName}'
+    )).map((result) => Person.fromMap(result)).toList();
+  }
+
+  Future<List<Person>> filter(String? filter) async {
+    if (filter == null || filter.isEmpty) {
+      return all();
+    } else {
+      return (await database.query(
+        Person.table,
+        where: '${Person.columnFirstName} LIKE ? OR ${Person.columnLastName} LIKE ?',
+        whereArgs: ['%$filter%', '%$filter%'],
+        orderBy: '${Person.columnMaster} DESC, ${Person.columnFirstName} ASC'
+      )).map((result) => Person.fromMap(result)).toList();
+    }
+  }
 }

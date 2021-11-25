@@ -50,10 +50,31 @@ CREATE TABLE $table (
 class AccountProvider extends Provider<Account> {
   AccountProvider(Database database) : super(database);
 
-  Future<Iterable<Account>> all() async {
+  Future<Account?> select(int id) async {
     return (await database.query(
         Account.table,
-        orderBy: '${Account.columnName} ASC')).map((result) => Account.fromMap(result));
+        where: '${Account.columnId} = ?',
+        whereArgs: [id]
+    )).map((result) => Account.fromMap(result)).first;
   }
 
+  Future<List<Account>> all() async {
+    return (await database.query(
+        Account.table,
+        orderBy: '${Account.columnName} ASC')).map((result) => Account.fromMap(result)
+    ).toList();
+  }
+
+  Future<List<Account>> filter(String? filter) async {
+    if (filter == null || filter.isEmpty) {
+      return all();
+    } else {
+      return (await database.query(
+          Account.table,
+          where: '${Account.columnName} LIKE ?',
+          whereArgs: ['%$filter%'],
+          orderBy: '${Account.columnName} ASC'
+      )).map((result) => Account.fromMap(result)).toList();
+    }
+  }
 }
