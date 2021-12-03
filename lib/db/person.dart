@@ -64,12 +64,12 @@ CREATE TABLE $table (
 class PersonProvider extends Provider<Person> {
   PersonProvider(Database database) : super(database);
 
-  Future<Iterable<Person>> allForAccount(Account account) async {
+  Future<List<Person>> allForAccount(Account account) async {
     return (await database.query(
         Person.table,
         where: '${Person.columnAccountId} = ?',
         whereArgs: [account.id],
-        orderBy: '${Person.columnMaster} DESC, ${Person.columnFirstName} ASC')).map((result) => Person.fromMap(result));
+        orderBy: '${Person.columnMaster} DESC, ${Person.columnFirstName} ASC')).map((result) => Person.fromMap(result)).toList();
   }
 
   Future<bool> existingMasterForAccount(Account account) async {

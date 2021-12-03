@@ -54,7 +54,6 @@ CREATE TABLE $table (
   Donation();
 
   Donation.fromMap(Map map) {
-    print('Donation: $map');
     id = map[columnId] as int?;
     accountId = map[columnAccountId] as int?;
     receivedDate = _parseDate(map[columnReceived]);
@@ -152,4 +151,15 @@ SELECT
   ORDER BY D.${Donation.columnReceived} DESC, A.${Account.columnName}
     ''');
   }
+
+
+  Future<List<Donation>> byAccount(Account account) async {
+    return (await database.query(
+      Donation.table,
+      where: '${Donation.columnAccountId} = ?',
+      whereArgs: [account.id],
+      orderBy: '${Donation.columnReceived}, ${Donation.columnDate}'
+    )).map((result) => Donation.fromMap(result)).toList();
+  }
+
 }
