@@ -14,6 +14,7 @@ import 'screen/category_edit_page.dart';
 import 'screen/donation_page.dart';
 import 'screen/donation_create_page.dart';
 import 'screen/donation_edit_page.dart';
+import 'screen/tax_report_page.dart';
 
 void main() {
   runApp(
@@ -122,6 +123,13 @@ class MyApp extends StatelessWidget {
                 return DonationEditPage(database: arguments.database, record: arguments.record);
               }
           );
+        } else if (settings.name == TaxReportPage.route) {
+          final arguments = settings.arguments as TaxReportArguments;
+          return MaterialPageRoute(
+              builder: (context) {
+                return TaxReportPage(database: arguments.database);
+              }
+          );
         }
       },
       title: 'New Life Fellowship Giving Database',
@@ -193,6 +201,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   case 'donations':
                     Navigator.pushNamed(context, DonationPage.route, arguments: DonationArguments(database));
                     break;
+                  case 'tax_reports':
+                    Navigator.pushNamed(context, TaxReportPage.route, arguments: TaxReportArguments(database));
+                    break;
                 }
               },
               itemBuilder: (context) => [
@@ -207,6 +218,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 const PopupMenuItem(
                     child: Text('Donations'),
                     value: 'donations'
+                ),
+                const PopupMenuItem(
+                    child: Text('Tax Reports'),
+                    value: 'tax_reports'
                 ),
               ],
             ),

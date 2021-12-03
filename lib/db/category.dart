@@ -63,8 +63,8 @@ class CategoryProvider extends Provider<Category> {
     )).map((result) => Category.fromMap(result)).first;
   }
 
-  Future<Iterable<Category>> all() async {
-    return (await database.query(Category.table)).map((result) => Category.fromMap(result));
+  Future<List<Category>> all() async {
+    return (await database.query(Category.table)).map((result) => Category.fromMap(result)).toList();
   }
 
   Future<List<Category>> active() async {
