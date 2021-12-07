@@ -63,6 +63,20 @@ class CategoryProvider extends Provider<Category> {
     )).map((result) => Category.fromMap(result)).first;
   }
 
+  Future<Category?> selectByName(String name) async {
+    List<Category> categories = (await database.query(
+        Category.table,
+        where: '${Category.columnName} = ?',
+        whereArgs: [name]
+    )).map((result) => Category.fromMap(result)).toList();
+
+    if (categories.isEmpty) {
+      return null;
+    } else {
+      return categories.first;
+    }
+  }
+
   Future<List<Category>> all() async {
     return (await database.query(Category.table)).map((result) => Category.fromMap(result)).toList();
   }

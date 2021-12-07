@@ -16,7 +16,9 @@ class TaxReportsGenerator {
 
   void _generateAllTaxReports() {
     _accountProvider.all().asStream().listen((accounts) {
-      accounts.forEach((account) => _generateAccountTaxReport(account));
+      for (Account account in accounts) {
+        _generateAccountTaxReport(account);
+      }
     });
   }
 

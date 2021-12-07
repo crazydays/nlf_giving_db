@@ -15,6 +15,7 @@ import 'screen/donation_page.dart';
 import 'screen/donation_create_page.dart';
 import 'screen/donation_edit_page.dart';
 import 'screen/tax_report_page.dart';
+import 'screen/import_csv_page.dart';
 
 void main() {
   runApp(
@@ -130,6 +131,13 @@ class MyApp extends StatelessWidget {
                 return TaxReportPage(database: arguments.database);
               }
           );
+        } else if (settings.name == ImportCsvPage.route) {
+          final arguments = settings.arguments as ImportCsvArguments;
+          return MaterialPageRoute(
+              builder: (context) {
+                return ImportCsvPage(database: arguments.database);
+              }
+          );
         }
       },
       title: 'New Life Fellowship Giving Database',
@@ -204,6 +212,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   case 'tax_reports':
                     Navigator.pushNamed(context, TaxReportPage.route, arguments: TaxReportArguments(database));
                     break;
+                  case 'import_csv':
+                    Navigator.pushNamed(context, ImportCsvPage.route, arguments: ImportCsvArguments(database));
+                    break;
                 }
               },
               itemBuilder: (context) => [
@@ -222,6 +233,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 const PopupMenuItem(
                     child: Text('Tax Reports'),
                     value: 'tax_reports'
+                ),
+                const PopupMenuItem(
+                    child: Text('Import Csv'),
+                    value: 'import_csv'
                 ),
               ],
             ),

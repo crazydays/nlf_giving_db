@@ -26,7 +26,6 @@ class DonationPage extends StatefulWidget {
 
 class _DonationState extends State<DonationPage> {
   final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
-  final NumberFormat _currencyFormat = NumberFormat.compactCurrency();
 
   late DonationProvider _provider;
   late List<Map<String, Object?>> _donations;
@@ -122,7 +121,7 @@ class _DonationState extends State<DonationPage> {
                                 Text(_donations[index][Donation.columnACHTrace]! as String)
                             ),
                             DataCell(
-                                Text(_currencyFormat.format((_donations[index][Donation.columnAmount] as int) / 100.0))
+                                Text(Donation.currencyFormat.format((_donations[index][Donation.columnAmount] as int) / 100.0))
                             ),
                             DataCell(
                                 Text(_donations[index]['${Category.table}_${Category.columnName}']! as String)

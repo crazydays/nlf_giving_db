@@ -19,6 +19,7 @@ class Donation implements Model {
   static const String columnCategoryId = Category.columnIdFk;
 
   static final dateFormat = DateFormat('yyyy-MM-dd');
+  static final currencyFormat = NumberFormat.currency(symbol: '\$', customPattern: '¤###,###.00;-¤###,###.00');
 
   static Future<void> onCreate(Database database, int version) async {
     return database.execute('''
@@ -73,7 +74,6 @@ CREATE TABLE $table (
     } else if (value.runtimeType == String) {
       return dateFormat.parse(value as String);
     } else {
-      print('Unknown date time type: ${value.runtimeType}');
       return null;
     }
   }
@@ -82,7 +82,7 @@ CREATE TABLE $table (
     if (value == null) {
       return null;
     } else if (value.runtimeType == String) {
-      return double.tryParse(value as String);
+      return currencyFormat.parse(value as String).toDouble();
     } else if (value.runtimeType == int) {
       return (value as int) / 100.0;
     } else {

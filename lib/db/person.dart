@@ -69,7 +69,22 @@ class PersonProvider extends Provider<Person> {
         Person.table,
         where: '${Person.columnAccountId} = ?',
         whereArgs: [account.id],
-        orderBy: '${Person.columnMaster} DESC, ${Person.columnFirstName} ASC')).map((result) => Person.fromMap(result)).toList();
+        orderBy: '${Person.columnMaster} DESC, ${Person.columnFirstName} ASC'
+    )).map((result) => Person.fromMap(result)).toList();
+  }
+
+  Future<Person?> selectByFirstAndLastName(Account account, String firstName, String lastName) async {
+    List<Person> persons = (await database.query(
+        Person.table,
+      where: '${Person.columnAccountId} = ? AND ${Person.columnFirstName} = ? AND ${Person.columnLastName} = ?',
+      whereArgs: [account.id, firstName, lastName]
+    )).map((result) => Person.fromMap(result)).toList();
+
+    if (persons.isEmpty) {
+      return null;
+    } else {
+      return persons.first;
+    }
   }
 
   Future<bool> existingMasterForAccount(Account account) async {
