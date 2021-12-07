@@ -58,6 +58,20 @@ class AccountProvider extends Provider<Account> {
     )).map((result) => Account.fromMap(result)).first;
   }
 
+  Future<Account?> selectByName(String name) async {
+    List<Account> accounts = (await database.query(
+        Account.table,
+        where: '${Account.columnName} = ?',
+        whereArgs: [name]
+    )).map((result) => Account.fromMap(result)).toList();
+
+    if (accounts.isEmpty) {
+      return null;
+    } else {
+      return accounts.first;
+    }
+  }
+
   Future<List<Account>> all() async {
     return (await database.query(
         Account.table,

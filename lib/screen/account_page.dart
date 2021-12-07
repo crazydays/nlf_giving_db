@@ -66,65 +66,68 @@ class _AccountState extends State<AccountPage> {
           margin: const EdgeInsets.all(10.0),
           child: Container(
               padding: const EdgeInsets.all(10.0),
-              child: DataTable(
-                  columns: const <DataColumn>[
-                    DataColumn(
-                        label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                  ],
-                  rows: List<DataRow>.generate(
-                      _accounts.length,
-                          (int index) => DataRow(
-                          cells: <DataCell>[
-                            DataCell(
-                                Text(_accounts[index].name!)
-                            ),
-                            DataCell(
-                                Row(
-                                  children: <Widget>[
-                                    IconButton(
-                                        onPressed: () {
-                                          Navigator.pushNamed(
-                                              context,
-                                              PersonPage.route,
-                                              arguments: PersonPageArguments(widget.database, _accounts[index])
-                                          );
-                                        },
-                                        icon: const Icon(Icons.person)
-                                    ),
-                                    IconButton(
-                                        onPressed: () {
-                                          Navigator.pushNamed(
-                                              context,
-                                              AddressPage.route,
-                                              arguments: AddressPageArguments(widget.database, _accounts[index])
-                                          );
-                                        },
-                                        icon: const Icon(Icons.house)
-                                    ),
-                                    IconButton(
-                                        onPressed: () {
-                                          Navigator.pushNamed(
-                                              context,
-                                              AccountEditPage.route,
-                                              arguments: AccountEditPageArguments(widget.database, _accounts[index])
-                                          );
-                                        },
-                                        icon: const Icon(Icons.edit)
-                                    ),
-                                    IconButton(
-                                        onPressed: () {
-                                          _delete(_accounts[index]);
-                                        },
-                                        icon: const Icon(Icons.delete)
-                                    ),
-                                  ],
-                                )
-                            ),
-                          ]
+              child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: DataTable(
+                      columns: const <DataColumn>[
+                        DataColumn(
+                            label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        DataColumn(
+                            label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                      ],
+                      rows: List<DataRow>.generate(
+                          _accounts.length,
+                              (int index) => DataRow(
+                              cells: <DataCell>[
+                                DataCell(
+                                    Text(_accounts[index].name!)
+                                ),
+                                DataCell(
+                                    Row(
+                                      children: <Widget>[
+                                        IconButton(
+                                            onPressed: () {
+                                              Navigator.pushNamed(
+                                                  context,
+                                                  PersonPage.route,
+                                                  arguments: PersonPageArguments(widget.database, _accounts[index])
+                                              );
+                                            },
+                                            icon: const Icon(Icons.person)
+                                        ),
+                                        IconButton(
+                                            onPressed: () {
+                                              Navigator.pushNamed(
+                                                  context,
+                                                  AddressPage.route,
+                                                  arguments: AddressPageArguments(widget.database, _accounts[index])
+                                              );
+                                            },
+                                            icon: const Icon(Icons.house)
+                                        ),
+                                        IconButton(
+                                            onPressed: () {
+                                              Navigator.pushNamed(
+                                                  context,
+                                                  AccountEditPage.route,
+                                                  arguments: AccountEditPageArguments(widget.database, _accounts[index])
+                                              );
+                                            },
+                                            icon: const Icon(Icons.edit)
+                                        ),
+                                        IconButton(
+                                            onPressed: () {
+                                              _delete(_accounts[index]);
+                                            },
+                                            icon: const Icon(Icons.delete)
+                                        ),
+                                      ],
+                                    )
+                                ),
+                              ]
+                          )
                       )
                   )
               )
