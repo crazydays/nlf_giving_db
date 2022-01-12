@@ -68,87 +68,91 @@ class _DonationState extends State<DonationPage> {
           margin: const EdgeInsets.all(10.0),
           child: Container(
               padding: const EdgeInsets.all(10.0),
-              child: DataTable(
-                  columns: const <DataColumn>[
-                    DataColumn(
-                        label: Text('Account', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('Received', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('Date', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('Check #', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('ACH', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('ACH Trace', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('Amount', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('Category', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                  ],
-                  rows: List<DataRow>.generate(
-                      _donations.length,
-                          (int index) => DataRow(
-                          cells: <DataCell>[
-                            DataCell(
-                                Text(_donations[index]['${Account.table}_${Account.columnName}']! as String)
-                            ),
-                            DataCell(
-                                Text(_donations[index][Donation.columnReceived] as String)
-                            ),
-                            DataCell(
-                                Text(_donations[index][Donation.columnDate] as String)
-                            ),
-                            DataCell(
-                                Text(_donations[index][Donation.columnCheck]! as String)
-                            ),
-                            DataCell(
-                                Text(_donations[index][Donation.columnACH]! as String)
-                            ),
-                            DataCell(
-                                Text(_donations[index][Donation.columnACHTrace]! as String)
-                            ),
-                            DataCell(
-                                Text(Donation.currencyFormat.format((_donations[index][Donation.columnAmount] as int) / 100.0))
-                            ),
-                            DataCell(
-                                Text(_donations[index]['${Category.table}_${Category.columnName}']! as String)
-                            ),
-                            DataCell(
-                                Row(
-                                  children: <Widget>[
-                                    IconButton(
-                                        onPressed: () {
-                                          Navigator.pushNamed(
-                                              context,
-                                              DonationEditPage.route,
-                                              arguments: DonationEditPageArguments(widget.database, Donation.fromMap(_donations[index]))
-                                          );
-                                        },
-                                        icon: const Icon(Icons.edit)
-                                    ),
-                                    IconButton(
-                                        onPressed: () {
-                                          _delete(Donation.fromMap(_donations[index]));
-                                        },
-                                        icon: const Icon(Icons.delete)
-                                    ),
-                                  ],
-                                )
-                            ),
-                          ]
+              child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+
+                  child: DataTable(
+                      columns: const <DataColumn>[
+                        DataColumn(
+                            label: Text('Account', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        DataColumn(
+                            label: Text('Received', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        DataColumn(
+                            label: Text('Date', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        DataColumn(
+                            label: Text('Check #', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        DataColumn(
+                            label: Text('ACH', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        DataColumn(
+                            label: Text('ACH Trace', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        DataColumn(
+                            label: Text('Amount', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        DataColumn(
+                            label: Text('Category', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        DataColumn(
+                            label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                      ],
+                      rows: List<DataRow>.generate(
+                          _donations.length,
+                              (int index) => DataRow(
+                              cells: <DataCell>[
+                                DataCell(
+                                    Text(_donations[index]['${Account.table}_${Account.columnName}']! as String)
+                                ),
+                                DataCell(
+                                    Text(_donations[index][Donation.columnReceived] as String)
+                                ),
+                                DataCell(
+                                    Text(_donations[index][Donation.columnDate] as String)
+                                ),
+                                DataCell(
+                                    Text(_donations[index][Donation.columnCheck]! as String)
+                                ),
+                                DataCell(
+                                    Text(_donations[index][Donation.columnACH]! as String)
+                                ),
+                                DataCell(
+                                    Text(_donations[index][Donation.columnACHTrace]! as String)
+                                ),
+                                DataCell(
+                                    Text(Donation.currencyFormat.format((_donations[index][Donation.columnAmount] as int) / 100.0))
+                                ),
+                                DataCell(
+                                    Text(_donations[index]['${Category.table}_${Category.columnName}']! as String)
+                                ),
+                                DataCell(
+                                    Row(
+                                      children: <Widget>[
+                                        IconButton(
+                                            onPressed: () {
+                                              Navigator.pushNamed(
+                                                  context,
+                                                  DonationEditPage.route,
+                                                  arguments: DonationEditPageArguments(widget.database, Donation.fromMap(_donations[index]))
+                                              );
+                                            },
+                                            icon: const Icon(Icons.edit)
+                                        ),
+                                        IconButton(
+                                            onPressed: () {
+                                              _delete(Donation.fromMap(_donations[index]));
+                                            },
+                                            icon: const Icon(Icons.delete)
+                                        ),
+                                      ],
+                                    )
+                                ),
+                              ]
+                          )
                       )
                   )
               )

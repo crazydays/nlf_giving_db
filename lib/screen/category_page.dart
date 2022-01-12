@@ -61,65 +61,68 @@ class _CategoryState extends State<CategoryPage> {
         title: const Text('Manage Categories'),
       ),
       body: Card(
-        margin: const EdgeInsets.all(10.0),
-        child: Container(
-          padding: const EdgeInsets.all(10.0),
-          child: DataTable(
-            columns: const <DataColumn>[
-              DataColumn(
-                label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))
-              ),
-              DataColumn(
-                label: Text('Active', style: TextStyle(fontWeight: FontWeight.bold))
-              ),
-              DataColumn(
-                label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))
-              ),
-            ],
-            rows: List<DataRow>.generate(
-              _categories.length,
-              (int index) => DataRow(
-                cells: <DataCell>[
-                  DataCell(
-                    Text(_categories[index].name!)
-                  ),
-                  DataCell(
-                      Text(_categories[index].active! ? 'Active' : 'Inactive')
-                  ),
-                  DataCell(
-                      Row(
-                        children: <Widget>[
-                          IconButton(
-                            onPressed: () {
-                              Navigator.pushNamed(
-                                context,
-                                CategoryEditPage.route,
-                                arguments: CategoryEditPageArguments(widget.database, _categories[index])
-                              );
-                            },
-                            icon: const Icon(Icons.edit)
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              _delete(_categories[index]);
-                            },
-                            icon: const Icon(Icons.delete)
-                          ),
-                        ],
+          margin: const EdgeInsets.all(10.0),
+          child: Container(
+              padding: const EdgeInsets.all(10.0),
+              child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: DataTable(
+                      columns: const <DataColumn>[
+                        DataColumn(
+                            label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        DataColumn(
+                            label: Text('Active', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        DataColumn(
+                            label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                      ],
+                      rows: List<DataRow>.generate(
+                          _categories.length,
+                              (int index) => DataRow(
+                              cells: <DataCell>[
+                                DataCell(
+                                    Text(_categories[index].name!)
+                                ),
+                                DataCell(
+                                    Text(_categories[index].active! ? 'Active' : 'Inactive')
+                                ),
+                                DataCell(
+                                    Row(
+                                      children: <Widget>[
+                                        IconButton(
+                                            onPressed: () {
+                                              Navigator.pushNamed(
+                                                  context,
+                                                  CategoryEditPage.route,
+                                                  arguments: CategoryEditPageArguments(widget.database, _categories[index])
+                                              );
+                                            },
+                                            icon: const Icon(Icons.edit)
+                                        ),
+                                        IconButton(
+                                            onPressed: () {
+                                              _delete(_categories[index]);
+                                            },
+                                            icon: const Icon(Icons.delete)
+                                        ),
+                                      ],
+                                    )
+                                ),
+                              ]
+                          )
                       )
-                  ),
-                ]
+                  )
               )
-            )
           )
-        )
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(
-            context,
-            CategoryCreatePage.route,
-            arguments: CategoryCreatePageArguments(widget.database)
+              context,
+              CategoryCreatePage.route,
+              arguments: CategoryCreatePageArguments(widget.database)
           );
         },
         child: const Icon(Icons.add_circle_outline),
