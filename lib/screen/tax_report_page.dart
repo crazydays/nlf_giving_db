@@ -16,7 +16,8 @@ class TaxReportPage extends StatelessWidget {
   const TaxReportPage({ Key? key, required this.database }) : super(key: key);
 
   void generateTaxReports() async {
-    TaxReportsGenerator(database).generate();
+    // TODO: figure out year
+    TaxReportsGenerator(database, 2021).generate();
   }
 
   @override
