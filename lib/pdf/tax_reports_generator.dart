@@ -4,9 +4,10 @@ import '../db/account.dart';
 
 class TaxReportsGenerator {
   final GivingDatabase _database;
+  final int _year;
   late AccountProvider _accountProvider;
 
-  TaxReportsGenerator(this._database) {
+  TaxReportsGenerator(this._database, this._year) {
     _accountProvider = _database.providers[Account] as AccountProvider;
   }
 
@@ -23,6 +24,6 @@ class TaxReportsGenerator {
   }
 
   void _generateAccountTaxReport(Account account) {
-    TaxReportGenerator(_database, account).generate();
+    TaxReportGenerator(_database, account, _year).generate();
   }
 }

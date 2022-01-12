@@ -152,12 +152,14 @@ SELECT
     ''');
   }
 
+  Future<List<Donation>> byAccountByYear(Account account, int year) async {
+    String startDate = '$year-01-01';
+    String endDate = '$year-12-31';
 
-  Future<List<Donation>> byAccount(Account account) async {
     return (await database.query(
       Donation.table,
-      where: '${Donation.columnAccountId} = ?',
-      whereArgs: [account.id],
+      where: '${Donation.columnAccountId} = ? AND ${Donation.columnReceived} >= ? AND ${Donation.columnReceived} <= ?',
+      whereArgs: [account.id, startDate, endDate],
       orderBy: '${Donation.columnReceived}, ${Donation.columnDate}'
     )).map((result) => Donation.fromMap(result)).toList();
   }
