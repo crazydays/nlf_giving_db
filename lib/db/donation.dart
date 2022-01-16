@@ -152,15 +152,95 @@ SELECT
     ''');
   }
 
+  Future<List<Map<String, Object?>>> filter(String? name, DateTime? startDate, DateTime? endDate, Category? category) async {
+    return database.rawQuery('''
+SELECT
+    D.${Donation.columnId},
+    D.${Donation.columnAccountId},
+    A.${Account.columnName} AS ${Account.table}_${Account.columnName},
+    D.${Donation.columnReceived},
+    D.${Donation.columnDate},
+    D.${Donation.columnCheck},
+    D.${Donation.columnACH},
+    D.${Donation.columnACHTrace},
+    D.${Donation.columnAmount},
+    D.${Donation.columnCategoryId},
+    C.${Category.columnName} AS ${Category.table}_${Category.columnName}
+  FROM
+    ${Donation.table} D
+    INNER JOIN ${Account.table} A ON A.${Account.columnId} = D.${Donation.columnAccountId}
+    INNER JOIN ${Category.table} C ON C.${Category.columnId} = D.${Donation.columnCategoryId}
+    ${_filterWhereClause(name, startDate, endDate, category)}
+  ORDER BY D.${Donation.columnReceived} DESC, A.${Account.columnName}
+    ''',
+    _filterWhereArguments(name, startDate, endDate, category));
+  }
+
+  String _filterWhereClause(String? name, DateTime? startDate, DateTime? endDate, Category? category) {
+    String accumulator = '';
+    if (name != null && name.isNotEmpty) {
+      accumulator += 'A.${Account.columnName} LIKE ?';
+    }
+
+    if (startDate != null) {
+      if (accumulator.isNotEmpty) {
+        accumulator += ' AND ';
+      }
+
+      accumulator += '(D.${Donation.columnReceived} >= ? || D.${Donation.columnDate} >= ?)';
+    }
+
+    if (endDate != null) {
+      if (accumulator.isNotEmpty) {
+        accumulator += ' AND ';
+      }
+
+      accumulator += '(D.${Donation.columnReceived} <= ? || D.${Donation.columnDate} <= ?)';
+    }
+
+    if (category != null) {
+      if (accumulator.isNotEmpty) {
+        accumulator += ' AND ';
+      }
+
+      accumulator += 'D.${Donation.columnCategoryId} = ?';
+    }
+
+    return accumulator.isEmpty ? '' : 'WHERE ' + accumulator;
+  }
+
+  List<Object> _filterWhereArguments(String? name, DateTime? startDate, DateTime? endDate, Category? category) {
+    List<Object> arguments = [];
+    if (name != null && name.isNotEmpty) {
+      arguments.add('%$name%');
+    }
+
+    if (startDate != null) {
+      arguments.add(startDate);
+      arguments.add(startDate);
+    }
+
+    if (endDate != null) {
+      arguments.add(endDate);
+      arguments.add(endDate);
+    }
+
+    if (category != null) {
+      arguments.add(category.id!);
+    }
+
+    return arguments;
+  }
+
   Future<List<Donation>> byAccountByYear(Account account, int year) async {
     String startDate = '$year-01-01';
     String endDate = '$year-12-31';
 
     return (await database.query(
       Donation.table,
-      where: '${Donation.columnAccountId} = ? AND ${Donation.columnReceived} >= ? AND ${Donation.columnReceived} <= ?',
+      where: '${Donation.columnAccountId} = ? AND ${Donation.columnDate} >= ? AND ${Donation.columnDate} <= ?',
       whereArgs: [account.id, startDate, endDate],
-      orderBy: '${Donation.columnReceived}, ${Donation.columnDate}'
+      orderBy: Donation.columnDate
     )).map((result) => Donation.fromMap(result)).toList();
   }
 
