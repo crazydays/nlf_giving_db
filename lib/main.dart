@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'db/giving_database.dart';
-import 'screen/account_page.dart';
-import 'screen/account_create_page.dart';
-import 'screen/account_edit_page.dart';
-import 'screen/person_page.dart';
-import 'screen/person_create_page.dart';
-import 'screen/person_edit_page.dart';
-import 'screen/address_page.dart';
-import 'screen/category_page.dart';
-import 'screen/category_create_page.dart';
-import 'screen/category_edit_page.dart';
-import 'screen/donation_page.dart';
-import 'screen/donation_create_page.dart';
-import 'screen/donation_edit_page.dart';
-import 'screen/tax_report_page.dart';
-import 'screen/import_csv_page.dart';
+import 'page/account_page.dart';
+import 'page/account_create_page.dart';
+import 'page/account_edit_page.dart';
+import 'page/person_page.dart';
+import 'page/person_create_page.dart';
+import 'page/person_edit_page.dart';
+import 'page/address_page.dart';
+import 'page/category_page.dart';
+import 'page/category_create_page.dart';
+import 'page/category_edit_page.dart';
+import 'page/donation_page.dart';
+import 'page/donation_create_page.dart';
+import 'page/donation_edit_page.dart';
+import 'page/tax_report_page.dart';
+import 'page/import_csv_page.dart';
 
 void main() {
   runApp(

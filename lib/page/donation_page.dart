@@ -350,4 +350,3 @@ class _DonationState extends State<DonationPage> {
     );
   }
 }
-
