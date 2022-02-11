@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'account.dart';
-import 'provider.dart';
+import 'data_provider.dart';
 import 'model.dart';
 
 class Person implements Model {
@@ -61,7 +61,7 @@ CREATE TABLE $table (
   }
 }
 
-class PersonProvider extends Provider<Person> {
+class PersonProvider extends DataProvider<Person> {
   PersonProvider(Database database) : super(database);
 
   Future<List<Person>> allForAccount(Account account) async {

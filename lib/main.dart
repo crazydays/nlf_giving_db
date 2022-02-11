@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'db/giving_database.dart';
-import 'page/account_page.dart';
-import 'page/account_create_page.dart';
-import 'page/account_edit_page.dart';
-import 'page/person_page.dart';
-import 'page/person_create_page.dart';
-import 'page/person_edit_page.dart';
-import 'page/address_page.dart';
-import 'page/category_page.dart';
-import 'page/category_create_page.dart';
-import 'page/category_edit_page.dart';
-import 'page/donation_page.dart';
-import 'page/donation_create_page.dart';
-import 'page/donation_edit_page.dart';
-import 'page/tax_report_page.dart';
-import 'page/import_csv_page.dart';
+import 'package:nlf_giving_db/provider/database_provider.dart';
+
+import 'package:nlf_giving_db/page/splash_page.dart';
+import 'package:nlf_giving_db/page/account_page.dart';
+import 'package:nlf_giving_db/page/account_create_page.dart';
+import 'package:nlf_giving_db/page/account_edit_page.dart';
+import 'package:nlf_giving_db/page/person_page.dart';
+import 'package:nlf_giving_db/page/person_create_page.dart';
+import 'package:nlf_giving_db/page/person_edit_page.dart';
+import 'package:nlf_giving_db/page/address_page.dart';
+import 'package:nlf_giving_db/page/category_page.dart';
+import 'package:nlf_giving_db/page/category_create_page.dart';
+import 'package:nlf_giving_db/page/category_edit_page.dart';
+import 'package:nlf_giving_db/page/donation_page.dart';
+import 'package:nlf_giving_db/page/donation_create_page.dart';
+import 'package:nlf_giving_db/page/donation_edit_page.dart';
+import 'package:nlf_giving_db/page/tax_report_page.dart';
+import 'package:nlf_giving_db/page/import_csv_page.dart';
 
 void main() {
   runApp(
-      ChangeNotifierProvider(
-          create: (context) => null,
+      MultiProvider(
+          providers: [
+            ChangeNotifierProvider(
+                create: (context) => DatabaseProvider()
+            ),
+          ],
           child: const MyApp()
       )
   );
@@ -34,10 +40,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       onGenerateRoute: (settings) {
         if (settings.name == AccountPage.route) {
-          final arguments = settings.arguments as AccountPageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return AccountPage(database: arguments.database);
+                return const AccountPage();
               }
           );
         } else if (settings.name == AccountCreatePage.route) {
@@ -140,112 +145,10 @@ class MyApp extends StatelessWidget {
           );
         }
       },
-      title: 'New Life Fellowship Giving Database',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'New Life Fellowship Giving Database'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  GivingDatabase database = GivingDatabase('zdatabase');
-  bool open = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    database.open().asStream().listen((event) {
-      _opened();
-    });
-  }
-
-  void _opened() {
-    setState(() { open = true; });
-  }
-
-  @override
-  void dispose() {
-    database.close().asStream().listen((event) {
-      _closed();
-    });
-
-    super.dispose();
-  }
-
-  void _closed() {
-    setState(() {
-      open = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-          actions: [
-            PopupMenuButton(
-              icon: const Icon(Icons.more_vert),
-              onSelected: (index) {
-                switch (index) {
-                  case 'accounts':
-                    Navigator.pushNamed(context, AccountPage.route, arguments: AccountPageArguments(database));
-                    break;
-                  case 'categories':
-                    Navigator.pushNamed(context, CategoryPage.route, arguments: CategoryPageArguments(database));
-                    break;
-                  case 'donations':
-                    Navigator.pushNamed(context, DonationPage.route, arguments: DonationArguments(database));
-                    break;
-                  case 'tax_reports':
-                    Navigator.pushNamed(context, TaxReportPage.route, arguments: TaxReportArguments(database));
-                    break;
-                  case 'import_csv':
-                    Navigator.pushNamed(context, ImportCsvPage.route, arguments: ImportCsvArguments(database));
-                    break;
-                }
-              },
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                    child: Text('Accounts'),
-                    value: 'accounts'
-                ),
-                const PopupMenuItem(
-                    child: Text('Categories'),
-                    value: 'categories'
-                ),
-                const PopupMenuItem(
-                    child: Text('Donations'),
-                    value: 'donations'
-                ),
-                const PopupMenuItem(
-                    child: Text('Tax Reports'),
-                    value: 'tax_reports'
-                ),
-                const PopupMenuItem(
-                    child: Text('Import Csv'),
-                    value: 'import_csv'
-                ),
-              ],
-            ),
-          ],
-        ),
-        body: Column(
-          children: const <Widget>[
-          ],
-        )
+      home: const SplashPage(),
     );
   }
 }

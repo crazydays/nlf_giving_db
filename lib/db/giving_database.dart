@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 
-import 'provider.dart';
+import 'data_provider.dart';
 
 import 'category.dart';
 import 'account.dart';
@@ -11,7 +11,7 @@ import 'donation.dart';
 
 class GivingDatabase {
 
-  final Map<Type, Provider> providers = {};
+  final Map<Type, DataProvider> providers = {};
   final String filename;
   late Database database;
 
@@ -25,8 +25,17 @@ class GivingDatabase {
     providers[Donation] = DonationProvider(database);
   }
 
-  Provider getProvider(Type type) {
+  DataProvider getProvider(Type type) {
     return providers[type]!;
+  }
+
+  Future<void> open() async {
+    database = await openDatabase(filename, version: 1, onCreate: onCreate);
+    _setupProviders();
+  }
+
+  Future<void> close() async {
+    return database.close();
   }
 
   void onCreate(Database database, int version) async {
@@ -35,15 +44,5 @@ class GivingDatabase {
     await Person.onCreate(database, version);
     await Address.onCreate(database, version);
     await Donation.onCreate(database, version);
-  }
-
-  Future<void> open() async {
-    database = await openDatabase(filename, version: 1, onCreate: onCreate);
-    _setupProviders();
-    return Future(() {});
-  }
-
-  Future<void> close() async {
-    return database.close();
   }
 }

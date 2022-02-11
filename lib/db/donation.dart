@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import 'package:intl/intl.dart';
-import 'provider.dart';
+import 'data_provider.dart';
 import 'model.dart';
 import 'category.dart';
 import 'account.dart';
@@ -127,7 +127,7 @@ CREATE TABLE $table (
   }
 }
 
-class DonationProvider extends Provider<Donation> {
+class DonationProvider extends DataProvider<Donation> {
   DonationProvider(Database database) : super(database);
 
   Future<List<Map<String, Object?>>> all() async {
