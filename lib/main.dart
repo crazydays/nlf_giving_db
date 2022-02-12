@@ -83,7 +83,7 @@ class MyApp extends StatelessWidget {
           final arguments = settings.arguments as AddressPageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return AddressPage(database: arguments.database, account: arguments.account);
+                return AddressPage(account: arguments.account);
               }
           );
         } else if (settings.name == CategoryPage.route) {

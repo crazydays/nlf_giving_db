@@ -1,64 +1,45 @@
 import 'package:flutter/material.dart';
-import '../db/giving_database.dart';
-import '../db/account.dart';
-import '../db/address.dart';
+import 'package:provider/provider.dart';
+
+import 'package:nlf_giving_db/provider/database_provider.dart';
+import 'package:nlf_giving_db/db/account.dart';
+import 'package:nlf_giving_db/db/address.dart';
 
 class AddressPageArguments {
-  final GivingDatabase database;
   final Account account;
 
-  AddressPageArguments(this.database, this.account);
+  const AddressPageArguments(this.account);
 }
 
 class AddressPage extends StatefulWidget {
   static const route = '/address_page';
 
-  final GivingDatabase database;
   final Account account;
 
-  const AddressPage({ Key? key, required this.database, required this.account }) : super(key: key);
+  const AddressPage({ Key? key, required this.account }) : super(key: key);
 
   @override
   State<AddressPage> createState() => _AddressState();
 }
 
 class _AddressState extends State<AddressPage> {
-  late AddressProvider _provider;
+  AddressProvider get addressProvider => Provider.of<DatabaseProvider>(context, listen: false).addressProvider;
+
   late TextEditingController _address1Controller;
   late TextEditingController _address2Controller;
   late TextEditingController _cityController;
   late TextEditingController _stateController;
   late TextEditingController _postalCodeController;
-  late Address _address;
 
   @override
   void initState() {
     super.initState();
 
-    _provider = widget.database.getProvider(Address) as AddressProvider;
     _address1Controller = TextEditingController();
     _address2Controller = TextEditingController();
     _cityController = TextEditingController();
     _stateController = TextEditingController();
     _postalCodeController = TextEditingController();
-    _address = Address();
-
-    _loadAddress();
-  }
-
-  void _loadAddress() async {
-    _provider.loadByAccount(widget.account).asStream().listen((address) {
-      if (address != null) {
-        setState(() {
-          _address = address;
-          _address1Controller.text = _address.line1 == null ? '' : _address.line1!;
-          _address2Controller.text = _address.line2 == null ? '' : _address.line2!;
-          _cityController.text = _address.city == null ? '' : _address.city!;
-          _stateController.text = _address.state == null ? '' : _address.state!;
-          _postalCodeController.text = _address.postalCode == null ? '' : _address.postalCode!;
-        });
-      }
-    });
   }
 
   @override
@@ -71,101 +52,122 @@ class _AddressState extends State<AddressPage> {
     super.dispose();
   }
 
+  Future<Address> _load() async {
+    Address address = await addressProvider.loadByAccount(widget.account) ?? Address();
+
+    _address1Controller.text = address.line1 ?? '';
+    _address2Controller.text = address.line2 ?? '';
+    _cityController.text = address.city ?? '';
+    _stateController.text = address.state ?? '';
+    _postalCodeController.text = address.postalCode ?? '';
+
+    return address;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Account Address: ${widget.account.name}'),
       ),
-      body: Card(
-          margin: const EdgeInsets.all(10.0),
-          child: Container(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Container(
+      body: FutureBuilder<Address>(
+        future: _load(),
+        builder: (BuildContext context, AsyncSnapshot<Address> snapshot) {
+          if (snapshot.hasData) {
+            return Card(
+                margin: const EdgeInsets.all(10.0),
+                child: Padding(
                     padding: const EdgeInsets.all(10.0),
-                    child: TextField(
-                      controller: _address1Controller,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Address Line 1',
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(10.0),
-                    child: TextField(
-                      controller: _address2Controller,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Address Line 2',
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(10.0),
-                    child: TextField(
-                      controller: _cityController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'City',
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(10.0),
-                    child: TextField(
-                      controller: _stateController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'State',
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(10.0),
-                    child: TextField(
-                      controller: _postalCodeController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Postal Code',
-                      ),
-                    ),
-                  ),
-                  Container(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          OutlinedButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('Cancel')
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: TextField(
+                            controller: _address1Controller,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Address Line 1',
+                            ),
                           ),
-                          ElevatedButton(
-                              onPressed: () {
-                                _create();
-                                Navigator.pop(context);
-                              },
-                              child: const Text('Create')
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: TextField(
+                            controller: _address2Controller,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Address Line 2',
+                            ),
                           ),
-                        ],
-                      )
-                  ),
-                ],
-              )
-          )
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: TextField(
+                            controller: _cityController,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'City',
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: TextField(
+                            controller: _stateController,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'State',
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: TextField(
+                            controller: _postalCodeController,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Postal Code',
+                            ),
+                          ),
+                        ),
+                        Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                OutlinedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text('Cancel')
+                                ),
+                                ElevatedButton(
+                                    onPressed: () {
+                                      _create(snapshot.data!);
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text('Create')
+                                ),
+                              ],
+                            )
+                        ),
+                      ],
+                    )
+                )
+            );
+          } else {
+            return const Text('Loading data...');
+          }
+        },
       ),
     );
   }
 
-  void _create() async {
-    if (_address.id == null) {
-      await _provider.insert(Address.fromMap({
+  void _create(Address address) async {
+    if (address.id == null) {
+      await addressProvider.insert(Address.fromMap({
         Address.columnAccountId: widget.account.id,
         Address.columnLine1: _address1Controller.value.text,
         Address.columnLine2: _address2Controller.value.text,
@@ -174,8 +176,8 @@ class _AddressState extends State<AddressPage> {
         Address.columnPostalCode: _postalCodeController.value.text
       }));
     } else {
-      await _provider.update(Address.fromMap({
-        Address.columnId: _address.id,
+      await addressProvider.update(Address.fromMap({
+        Address.columnId: address.id,
         Address.columnAccountId: widget.account.id,
         Address.columnLine1: _address1Controller.value.text,
         Address.columnLine2: _address2Controller.value.text,

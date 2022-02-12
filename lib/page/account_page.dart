@@ -19,25 +19,10 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountState extends State<AccountPage> {
-  late List<Account> _accounts;
-
   AccountProvider get accountProvider => Provider.of<DatabaseProvider>(context, listen: false).accountProvider;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _accounts = <Account>[];
-
-    _loadAccounts();
-  }
-
-  void _loadAccounts() async {
-    accountProvider.all().asStream().listen((results) {
-      setState(() {
-        _accounts = results.toList();
-      });
-    });
+  Future<List<Account>> _load() async {
+    return accountProvider.all();
   }
 
   void _delete(Account record) {
@@ -51,6 +36,30 @@ class _AccountState extends State<AccountPage> {
     );
   }
 
+  void _gotoPersonPage(Account account) {
+    Navigator.pushNamed(
+        context,
+        PersonPage.route,
+        arguments: PersonPageArguments(account)
+    );
+  }
+
+  void _gotoAddressPage(Account account) {
+    Navigator.pushNamed(
+        context,
+        AddressPage.route,
+        arguments: AddressPageArguments(account)
+    );
+  }
+
+  void _gotoEditAccountPage(Account account) {
+    Navigator.pushNamed(
+        context,
+        AccountEditPage.route,
+        arguments: AccountEditPageArguments(account)
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<DatabaseProvider>(builder: (_, database, __) {
@@ -58,86 +67,32 @@ class _AccountState extends State<AccountPage> {
         appBar: AppBar(
           title: const Text('Manage Accounts'),
         ),
-        body: Card(
-            margin: const EdgeInsets.all(10.0),
-            child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: DataTable(
-                        columns: const <DataColumn>[
-                          DataColumn(
-                              label: Text('Name',
-                                  style: TextStyle(fontWeight: FontWeight
-                                      .bold))
-                          ),
-                          DataColumn(
-                              label: Text('Actions',
-                                  style: TextStyle(fontWeight: FontWeight
-                                      .bold))
-                          ),
-                        ],
-                        rows: List<DataRow>.generate(
-                            _accounts.length,
-                                (int index) =>
-                                DataRow(
-                                    cells: <DataCell>[
-                                      DataCell(
-                                          Text(_accounts[index].name!)
-                                      ),
-                                      DataCell(
-                                          Row(
-                                            children: <Widget>[
-                                              IconButton(
-                                                  onPressed: () {
-                                                    Navigator.pushNamed(
-                                                        context,
-                                                        PersonPage.route,
-                                                        arguments: PersonPageArguments(_accounts[index])
-                                                    );
-                                                  },
-                                                  icon: const Icon(
-                                                      Icons.person)
-                                              ),
-                                              IconButton(
-                                                  onPressed: () {
-                                                    Navigator.pushNamed(
-                                                        context,
-                                                        AddressPage.route,
-                                                        arguments: AddressPageArguments(
-                                                            database.database,
-                                                            _accounts[index])
-                                                    );
-                                                  },
-                                                  icon: const Icon(
-                                                      Icons.house)
-                                              ),
-                                              IconButton(
-                                                  onPressed: () {
-                                                    Navigator.pushNamed(
-                                                        context,
-                                                        AccountEditPage.route,
-                                                        arguments: AccountEditPageArguments(_accounts[index])
-                                                    );
-                                                  },
-                                                  icon: const Icon(Icons.edit)
-                                              ),
-                                              IconButton(
-                                                  onPressed: () {
-                                                    _delete(_accounts[index]);
-                                                  },
-                                                  icon: const Icon(
-                                                      Icons.delete)
-                                              ),
-                                            ],
-                                          )
-                                      ),
-                                    ]
-                                )
-                        )
-                    )
-                )
-            )
+        body: FutureBuilder<List<Account>>(
+          future: _load(),
+          builder: (BuildContext context, AsyncSnapshot<List<Account>> snapshot) {
+            if (snapshot.hasData) {
+              return PaginatedDataTable(
+                source: _AccountDataTableSource(snapshot.data!, _gotoPersonPage, _gotoAddressPage, _gotoEditAccountPage, _delete),
+                columns: const <DataColumn>[
+                  DataColumn(
+                      label: Text('Name',
+                          style: TextStyle(fontWeight: FontWeight
+                              .bold))
+                  ),
+                  DataColumn(
+                      label: Text('Actions',
+                          style: TextStyle(fontWeight: FontWeight
+                              .bold))
+                  ),
+                ],
+                columnSpacing: 100,
+                horizontalMargin: 10,
+                rowsPerPage: _calculateRows(),
+              );
+            } else {
+              return const Text('Loading data...');
+            }
+          },
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _gotoCreateAccountPage(),
@@ -145,5 +100,61 @@ class _AccountState extends State<AccountPage> {
         ),
       );
     });
+  }
+
+  int _calculateRows() {
+    return (MediaQuery.of(context).size.height - 180) ~/ 48;
+  }
+}
+
+class _AccountDataTableSource extends DataTableSource {
+  final List<Account> _data;
+  final Function _people;
+  final Function _address;
+  final Function _edit;
+  final Function _delete;
+
+  _AccountDataTableSource(this._data, this._people, this._address, this._edit, this._delete);
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => _data.length;
+
+  @override
+  int get selectedRowCount => 0;
+
+  @override
+  DataRow getRow(int index) {
+    return DataRow(
+        cells: <DataCell>[
+          DataCell(
+              Text(_data[index].name!)
+          ),
+          DataCell(
+              Row(
+                children: <Widget>[
+                  IconButton(
+                      onPressed: () => _people(_data[index]),
+                      icon: const Icon(Icons.people)
+                  ),
+                  IconButton(
+                      onPressed: () => _address(_data[index]),
+                      icon: const Icon(Icons.house)
+                  ),
+                  IconButton(
+                      onPressed: () => _edit(_data[index]),
+                      icon: const Icon(Icons.edit)
+                  ),
+                  IconButton(
+                      onPressed: () => _delete(_data[index]),
+                      icon: const Icon(Icons.delete)
+                  ),
+                ],
+              )
+          ),
+        ]
+    );
   }
 }
