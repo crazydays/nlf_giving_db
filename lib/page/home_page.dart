@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
                       Navigator.pushNamed(context, AccountPage.route);
                       break;
                     case 'categories':
-                      Navigator.pushNamed(context, CategoryPage.route, arguments: CategoryPageArguments(database.database));
+                      Navigator.pushNamed(context, CategoryPage.route);
                       break;
                     case 'donations':
                       Navigator.pushNamed(context, DonationPage.route, arguments: DonationArguments(database.database));

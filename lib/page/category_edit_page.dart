@@ -1,36 +1,37 @@
 import 'package:flutter/material.dart';
-import '../db/giving_database.dart';
-import '../db/category.dart';
+import 'package:provider/provider.dart';
+
+import 'package:nlf_giving_db/provider/database_provider.dart';
+import 'package:nlf_giving_db/db/category.dart';
+
 
 class CategoryEditPageArguments {
-  final GivingDatabase database;
   final Category record;
 
-  CategoryEditPageArguments(this.database, this.record);
+  CategoryEditPageArguments(this.record);
 }
 
 class CategoryEditPage extends StatefulWidget {
   static const route = '/category_edit_page';
 
-  final GivingDatabase database;
   final Category record;
 
-  const CategoryEditPage({ Key? key, required this.database, required this.record }) : super(key: key);
+  const CategoryEditPage({ Key? key, required this.record }) : super(key: key);
 
   @override
   State<CategoryEditPage> createState() => _CategoryEditState();
 }
 
 class _CategoryEditState extends State<CategoryEditPage> {
-  late CategoryProvider _provider;
   late TextEditingController _nameController;
   late bool _isActive;
+
+  CategoryProvider get categoryProvider => Provider.of<DatabaseProvider>(context, listen: false).categoryProvider;
 
   @override
   void initState() {
     super.initState();
 
-    _provider = widget.database.getProvider(Category) as CategoryProvider;
     _nameController = TextEditingController(text: widget.record.name);
     _isActive = widget.record.active == true;
   }
@@ -49,7 +50,7 @@ class _CategoryEditState extends State<CategoryEditPage> {
       ),
       body: Card(
           margin: const EdgeInsets.all(10.0),
-          child: Container(
+          child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -62,7 +63,7 @@ class _CategoryEditState extends State<CategoryEditPage> {
                       labelText: 'Name',
                     ),
                   ),
-                  Container(
+                  Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
                           children: <Widget>[
@@ -78,7 +79,7 @@ class _CategoryEditState extends State<CategoryEditPage> {
                           ]
                       )
                   ),
-                  Container(
+                  Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -113,6 +114,6 @@ class _CategoryEditState extends State<CategoryEditPage> {
       Category.columnActive: _isActive
     });
 
-    await _provider.update(record);
+    await categoryProvider.update(record);
   }
 }

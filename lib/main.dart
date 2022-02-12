@@ -87,24 +87,22 @@ class MyApp extends StatelessWidget {
               }
           );
         } else if (settings.name == CategoryPage.route) {
-          final arguments = settings.arguments as CategoryPageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return CategoryPage(database: arguments.database);
+                return const CategoryPage();
               }
           );
         } else if (settings.name == CategoryCreatePage.route) {
-          final arguments = settings.arguments as CategoryCreatePageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return CategoryCreatePage(database: arguments.database);
+                return const CategoryCreatePage();
               }
           );
         } else if (settings.name == CategoryEditPage.route) {
           final arguments = settings.arguments as CategoryEditPageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return CategoryEditPage(database: arguments.database, record: arguments.record);
+                return CategoryEditPage(record: arguments.record);
               }
           );
         } else if (settings.name == DonationPage.route) {
