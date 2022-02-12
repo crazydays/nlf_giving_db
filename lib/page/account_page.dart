@@ -93,9 +93,7 @@ class _AccountState extends State<AccountPage> {
                                                     Navigator.pushNamed(
                                                         context,
                                                         PersonPage.route,
-                                                        arguments: PersonPageArguments(
-                                                            database.database,
-                                                            _accounts[index])
+                                                        arguments: PersonPageArguments(_accounts[index])
                                                     );
                                                   },
                                                   icon: const Icon(

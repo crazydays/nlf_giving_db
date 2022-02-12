@@ -180,12 +180,10 @@ class _DonationState extends State<DonationPage> {
   }
 
   void _updateStartDate(DateTime? date) {
-    print('_updateStartDate: $date');
     _startDate = date;
   }
 
   void _updateEndDate(DateTime? date) {
-    print('_updateEndDate: $date');
     _endDate = date;
   }
 
@@ -231,7 +229,6 @@ class _DonationState extends State<DonationPage> {
             onSelected: (index) {
               switch (index) {
                 case 'filter':
-                  print('Filter');
                   break;
               }
             },

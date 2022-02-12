@@ -1,43 +1,47 @@
 import 'package:flutter/material.dart';
-import '../db/giving_database.dart';
-import '../db/account.dart';
-import '../db/person.dart';
+import 'package:provider/provider.dart';
+
+import 'package:nlf_giving_db/provider/database_provider.dart';
+import 'package:nlf_giving_db/db/account.dart';
+import 'package:nlf_giving_db/db/person.dart';
 
 class PersonCreatePageArguments {
-  final GivingDatabase database;
   final Account account;
 
-  PersonCreatePageArguments(this.database, this.account);
+  const PersonCreatePageArguments(this.account);
 }
 
 class PersonCreatePage extends StatefulWidget {
   static const route = '/person_create_page';
 
-  final GivingDatabase database;
   final Account account;
 
-  const PersonCreatePage({ Key? key, required this.database, required this.account }) : super(key: key);
+  const PersonCreatePage({ Key? key, required this.account }) : super(key: key);
 
   @override
-  State<PersonCreatePage> createState() => _PersonCreateState();
+  State<PersonCreatePage> createState() => _PersonCreatePageState();
 }
 
-class _PersonCreateState extends State<PersonCreatePage> {
-  late PersonProvider _provider;
+class _PersonCreatePageState extends State<PersonCreatePage> {
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late bool? _isMaster;
+
+  PersonProvider get personProvider => Provider.of<DatabaseProvider>(context, listen: false).personProvider;
 
   @override
   void initState() {
     super.initState();
 
-    _provider = widget.database.getProvider(Person) as PersonProvider;
     _firstNameController = TextEditingController();
     _lastNameController = TextEditingController();
     _isMaster = false;
 
-    _provider.existingMasterForAccount(widget.account).asStream().listen((result) {
+    initializeIsMaster();
+  }
+
+  Future<void> initializeIsMaster() async {
+    personProvider.existingMasterForAccount(widget.account).asStream().listen((result) {
       setState(() {
         _isMaster = !result;
       });
@@ -59,13 +63,13 @@ class _PersonCreateState extends State<PersonCreatePage> {
       ),
       body: Card(
           margin: const EdgeInsets.all(10.0),
-          child: Container(
+          child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Container(
+                  Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: TextField(
                       controller: _firstNameController,
@@ -75,7 +79,7 @@ class _PersonCreateState extends State<PersonCreatePage> {
                       ),
                     ),
                   ),
-                  Container(
+                  Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: TextField(
                       controller: _lastNameController,
@@ -85,7 +89,7 @@ class _PersonCreateState extends State<PersonCreatePage> {
                       ),
                     ),
                   ),
-                  Container(
+                  Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
                           children: <Widget>[
@@ -101,7 +105,7 @@ class _PersonCreateState extends State<PersonCreatePage> {
                           ]
                       )
                   ),
-                  Container(
+                  Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -137,6 +141,6 @@ class _PersonCreateState extends State<PersonCreatePage> {
       Person.columnLastName: _lastNameController.value.text,
     });
 
-    await _provider.insert(record);
+    await personProvider.insert(record);
   }
 }

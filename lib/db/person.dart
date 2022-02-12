@@ -48,7 +48,7 @@ CREATE TABLE $table (
   Map<String, Object?> toMap() {
     final map = <String, Object?> {
       columnAccountId: accountId,
-      columnMaster: master,
+      columnMaster: master == true ? 1 : 0,
       columnFirstName: firstName,
       columnLastName: lastName
     };

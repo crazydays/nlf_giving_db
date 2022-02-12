@@ -1,138 +1,149 @@
 import 'package:flutter/material.dart';
-import '../db/giving_database.dart';
-import '../db/account.dart';
-import '../db/person.dart';
+import 'package:provider/provider.dart';
+
+import 'package:nlf_giving_db/provider/database_provider.dart';
+import 'package:nlf_giving_db/db/account.dart';
+import 'package:nlf_giving_db/db/person.dart';
+
 import 'person_create_page.dart';
 import 'person_edit_page.dart';
 
+
 class PersonPageArguments {
-  final GivingDatabase database;
   final Account account;
 
-  PersonPageArguments(this.database, this.account);
+  const PersonPageArguments(this.account);
 }
 
 class PersonPage extends StatefulWidget {
   static const route = '/person_page';
 
-  final GivingDatabase database;
   final Account account;
 
-  const PersonPage({ Key? key, required this.database, required this.account }) : super(key: key);
+  const PersonPage({ Key? key, required this.account }) : super(key: key);
 
   @override
-  State<PersonPage> createState() => _PersonState();
+  State<PersonPage> createState() => _PersonPageState();
 }
 
-class _PersonState extends State<PersonPage> {
-  late PersonProvider _provider;
-  late List<Person> _persons;
+class _PersonPageState extends State<PersonPage> {
+  PersonProvider get personProvider => Provider.of<DatabaseProvider>(context, listen: false).personProvider;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _provider = widget.database.getProvider(Person) as PersonProvider;
-    _provider.dataChangedEvent + (e) => _loadPersons();
-    _persons = <Person>[];
-
-    _loadPersons();
+  Future<List<Person>> _load() {
+    return personProvider.allForAccount(widget.account);
   }
 
-  void _loadPersons() async {
-    _provider.allForAccount(widget.account).asStream().listen((results) {
-      setState(() {
-        _persons = results.toList();
-      });
-    });
+  void _edit(Person record) {
+    Navigator.pushNamed(
+        context,
+        PersonEditPage.route,
+        arguments: PersonEditPageArguments(widget.account, record)
+    );
   }
 
   void _delete(Person record) {
-    _provider.delete(record);
-  }
-
-  @override
-  void dispose() {
-    _provider.dataChangedEvent - (e) => _loadPersons();
-    super.dispose();
+    personProvider.delete(record);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Manage Account People: ${widget.account.name}'),
-      ),
-      body: Card(
-          margin: const EdgeInsets.all(10.0),
-          child: Container(
-              padding: const EdgeInsets.all(10.0),
-              child: DataTable(
-                  columns: const <DataColumn>[
-                    DataColumn(
-                        label: Text('Primary', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('First Name', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('Last Name', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    DataColumn(
-                        label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                  ],
-                  rows: List<DataRow>.generate(
-                      _persons.length,
-                          (int index) => DataRow(
-                          cells: <DataCell>[
-                            DataCell(
-                                Icon(_persons[index].master! ? Icons.star : Icons.star_outline)
-                            ),
-                            DataCell(
-                                Text(_persons[index].firstName!)
-                            ),
-                            DataCell(
-                                Text(_persons[index].lastName!)
-                            ),
-                            DataCell(
-                                Row(
-                                  children: <Widget>[
-                                    IconButton(
-                                        onPressed: () {
-                                          Navigator.pushNamed(
-                                              context,
-                                              PersonEditPage.route,
-                                              arguments: PersonEditPageArguments(widget.database, widget.account, _persons[index])
-                                          );
-                                        },
-                                        icon: const Icon(Icons.edit)
-                                    ),
-                                    IconButton(
-                                        onPressed: () {
-                                          _delete(_persons[index]);
-                                        },
-                                        icon: const Icon(Icons.delete)
-                                    ),
-                                  ],
-                                )
-                            ),
-                          ]
-                      )
-                  )
+    return Consumer<DatabaseProvider>(builder: (context, database, _) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Manage Account People: ${widget.account.name}'),
+        ),
+        body: FutureBuilder<List<Person>>(
+          future: _load(),
+          builder: (BuildContext context, AsyncSnapshot<List<Person>> snapshot) {
+            if (snapshot.hasData) {
+              return PaginatedDataTable(
+                source: _PersonDataTableSource(snapshot.data!, _edit, _delete),
+                columns: const [
+                  DataColumn(
+                      label: Text('Primary', style: TextStyle(fontWeight: FontWeight.bold))
+                  ),
+                  DataColumn(
+                      label: Text('First Name', style: TextStyle(fontWeight: FontWeight.bold))
+                  ),
+                  DataColumn(
+                      label: Text('Last Name', style: TextStyle(fontWeight: FontWeight.bold))
+                  ),
+                  DataColumn(
+                      label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))
+                  ),
+                ],
+                columnSpacing: 100,
+                horizontalMargin: 10,
+                rowsPerPage: _calculateRows(),
+              );
+            } else {
+              return const Text('Loading data...');
+            }
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.pushNamed(
+                context,
+                PersonCreatePage.route,
+                arguments: PersonCreatePageArguments(widget.account)
+            );
+          },
+          child: const Icon(Icons.add_circle_outline),
+        ),
+      );
+    });
+  }
+
+  int _calculateRows() {
+    return (MediaQuery.of(context).size.height - 180) ~/ 48;
+  }
+}
+
+class _PersonDataTableSource extends DataTableSource {
+  final List<Person> _data;
+  final Function _edit;
+  final Function _delete;
+
+  _PersonDataTableSource(this._data, this._edit, this._delete);
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => _data.length;
+
+  @override
+  int get selectedRowCount => 0;
+
+  @override
+  DataRow getRow(int index) {
+    return DataRow(
+        cells: [
+          DataCell(
+              Icon(_data[index].master! ? Icons.star : Icons.star_outline)
+          ),
+          DataCell(
+              Text(_data[index].firstName!)
+          ),
+          DataCell(
+              Text(_data[index].lastName!)
+          ),
+          DataCell(
+              Row(
+                children: <Widget>[
+                  IconButton(
+                      onPressed: () => _edit(_data[index]),
+                      icon: const Icon(Icons.edit)
+                  ),
+                  IconButton(
+                      onPressed: () => _delete(_data[index]),
+                      icon: const Icon(Icons.delete)
+                  ),
+                ],
               )
-          )
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(
-              context,
-              PersonCreatePage.route,
-              arguments: PersonCreatePageArguments(widget.database, widget.account)
-          );
-        },
-        child: const Icon(Icons.add_circle_outline),
-      ),
+          ),
+        ]
     );
   }
 }

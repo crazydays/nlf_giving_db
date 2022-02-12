@@ -22,11 +22,11 @@ class DatabaseProvider extends ChangeNotifier {
 
     await database.open();
 
-    accountProvider.dataChangedEvent.subscribe((args) => notify(args));
-    addressProvider.dataChangedEvent.subscribe((args) => notify(args));
-    categoryProvider.dataChangedEvent.subscribe((args) => notify(args));
-    donationProvider.dataChangedEvent.subscribe((args) => notify(args));
-    personProvider.dataChangedEvent.subscribe((args) => notify(args));
+    accountProvider.dataChangedEvent + (e) => notify(e);
+    addressProvider.dataChangedEvent + (e) => notify(e);
+    categoryProvider.dataChangedEvent + (e) => notify(e);
+    donationProvider.dataChangedEvent + (e) => notify(e);
+    personProvider.dataChangedEvent + (e) => notify(e);
 
     initialized = true;
 
@@ -35,11 +35,11 @@ class DatabaseProvider extends ChangeNotifier {
 
   @override
   Future<void> dispose() async {
-    accountProvider.dataChangedEvent.unsubscribe((args) => notify(args));
-    addressProvider.dataChangedEvent.unsubscribe((args) => notify(args));
-    categoryProvider.dataChangedEvent.unsubscribe((args) => notify(args));
-    categoryProvider.dataChangedEvent.unsubscribe((args) => notify(args));
-    personProvider.dataChangedEvent.unsubscribe((args) => notify(args));
+    accountProvider.dataChangedEvent - (e) => notify(e);
+    addressProvider.dataChangedEvent - (e) => notify(e);
+    categoryProvider.dataChangedEvent - (e) => notify(e);
+    categoryProvider.dataChangedEvent - (e) => notify(e);
+    personProvider.dataChangedEvent - (e) => notify(e);
 
     await database.close();
 

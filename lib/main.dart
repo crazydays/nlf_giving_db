@@ -62,21 +62,21 @@ class MyApp extends StatelessWidget {
           final arguments = settings.arguments as PersonPageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return PersonPage(database: arguments.database, account: arguments.account);
+                return PersonPage(account: arguments.account);
               }
           );
         } else if (settings.name == PersonCreatePage.route) {
           final arguments = settings.arguments as PersonCreatePageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return PersonCreatePage(database: arguments.database, account: arguments.account);
+                return PersonCreatePage(account: arguments.account);
               }
           );
         } else if (settings.name == PersonEditPage.route) {
           final arguments = settings.arguments as PersonEditPageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return PersonEditPage(database: arguments.database, account: arguments.account, record: arguments.record);
+                return PersonEditPage(account: arguments.account, record: arguments.record);
               }
           );
         } else if (settings.name == AddressPage.route) {

@@ -1,40 +1,40 @@
 import 'package:flutter/material.dart';
-import '../db/giving_database.dart';
-import '../db/account.dart';
-import '../db/person.dart';
+import 'package:provider/provider.dart';
+
+import 'package:nlf_giving_db/provider/database_provider.dart';
+import 'package:nlf_giving_db/db/account.dart';
+import 'package:nlf_giving_db/db/person.dart';
 
 class PersonEditPageArguments {
-  final GivingDatabase database;
   final Account account;
   final Person record;
 
-  PersonEditPageArguments(this.database, this.account, this.record);
+  const PersonEditPageArguments(this.account, this.record);
 }
 
 class PersonEditPage extends StatefulWidget {
   static const route = '/person_edit_page';
 
-  final GivingDatabase database;
   final Account account;
   final Person record;
 
-  const PersonEditPage({ Key? key, required this.database, required this.account, required this.record }) : super(key: key);
+  const PersonEditPage({ Key? key, required this.account, required this.record }) : super(key: key);
 
   @override
   State<PersonEditPage> createState() => _PersonEditState();
 }
 
 class _PersonEditState extends State<PersonEditPage> {
-  late PersonProvider _provider;
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late bool? _isMaster;
+
+  PersonProvider get personProvider => Provider.of<DatabaseProvider>(context, listen: false).personProvider;
 
   @override
   void initState() {
     super.initState();
 
-    _provider = widget.database.getProvider(Person) as PersonProvider;
     _firstNameController = TextEditingController(text: widget.record.firstName);
     _lastNameController = TextEditingController(text: widget.record.lastName);
     _isMaster = widget.record.master;
@@ -55,13 +55,13 @@ class _PersonEditState extends State<PersonEditPage> {
       ),
       body: Card(
           margin: const EdgeInsets.all(10.0),
-          child: Container(
+          child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Container(
+                  Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: TextField(
                       controller: _firstNameController,
@@ -71,7 +71,7 @@ class _PersonEditState extends State<PersonEditPage> {
                       ),
                     ),
                   ),
-                  Container(
+                  Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: TextField(
                       controller: _lastNameController,
@@ -81,7 +81,7 @@ class _PersonEditState extends State<PersonEditPage> {
                       ),
                     ),
                   ),
-                  Container(
+                  Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
                           children: <Widget>[
@@ -97,7 +97,7 @@ class _PersonEditState extends State<PersonEditPage> {
                           ]
                       )
                   ),
-                  Container(
+                  Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -134,6 +134,6 @@ class _PersonEditState extends State<PersonEditPage> {
       Person.columnLastName: _lastNameController.value.text,
     });
 
-    await _provider.update(record);
+    await personProvider.update(record);
   }
 }

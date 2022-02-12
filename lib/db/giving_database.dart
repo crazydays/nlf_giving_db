@@ -17,14 +17,6 @@ class GivingDatabase {
 
   GivingDatabase(this.filename);
 
-  void _setupProviders() {
-    providers[Category] = CategoryProvider(database);
-    providers[Account] = AccountProvider(database);
-    providers[Person] = PersonProvider(database);
-    providers[Address] = AddressProvider(database);
-    providers[Donation] = DonationProvider(database);
-  }
-
   DataProvider getProvider(Type type) {
     return providers[type]!;
   }
@@ -32,6 +24,14 @@ class GivingDatabase {
   Future<void> open() async {
     database = await openDatabase(filename, version: 1, onCreate: onCreate);
     _setupProviders();
+  }
+
+  void _setupProviders() {
+    providers[Category] = CategoryProvider(database);
+    providers[Account] = AccountProvider(database);
+    providers[Person] = PersonProvider(database);
+    providers[Address] = AddressProvider(database);
+    providers[Donation] = DonationProvider(database);
   }
 
   Future<void> close() async {
