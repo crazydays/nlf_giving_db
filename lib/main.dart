@@ -46,17 +46,16 @@ class MyApp extends StatelessWidget {
               }
           );
         } else if (settings.name == AccountCreatePage.route) {
-          final arguments = settings.arguments as AccountCreatePageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return AccountCreatePage(database: arguments.database);
+                return const AccountCreatePage();
               }
           );
         } else if (settings.name == AccountEditPage.route) {
           final arguments = settings.arguments as AccountEditPageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return AccountEditPage(database: arguments.database, record: arguments.record);
+                return AccountEditPage(record: arguments.record);
               }
           );
         } else if (settings.name == PersonPage.route) {

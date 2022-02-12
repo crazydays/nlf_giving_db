@@ -21,6 +21,8 @@ class AccountPage extends StatefulWidget {
 class _AccountState extends State<AccountPage> {
   late List<Account> _accounts;
 
+  AccountProvider get accountProvider => Provider.of<DatabaseProvider>(context, listen: false).accountProvider;
+
   @override
   void initState() {
     super.initState();
@@ -30,10 +32,8 @@ class _AccountState extends State<AccountPage> {
     _loadAccounts();
   }
 
-  AccountProvider get databaseProvider => Provider.of<DatabaseProvider>(context, listen: false).accountProvider;
-
   void _loadAccounts() async {
-    databaseProvider.all().asStream().listen((results) {
+    accountProvider.all().asStream().listen((results) {
       setState(() {
         _accounts = results.toList();
       });
@@ -41,7 +41,14 @@ class _AccountState extends State<AccountPage> {
   }
 
   void _delete(Account record) {
-    databaseProvider.delete(record);
+    accountProvider.delete(record);
+  }
+
+  void _gotoCreateAccountPage() {
+    Navigator.pushNamed(
+      context,
+      AccountCreatePage.route,
+    );
   }
 
   @override
@@ -53,7 +60,7 @@ class _AccountState extends State<AccountPage> {
         ),
         body: Card(
             margin: const EdgeInsets.all(10.0),
-            child: Container(
+            child: Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
@@ -112,9 +119,7 @@ class _AccountState extends State<AccountPage> {
                                                     Navigator.pushNamed(
                                                         context,
                                                         AccountEditPage.route,
-                                                        arguments: AccountEditPageArguments(
-                                                            database.database,
-                                                            _accounts[index])
+                                                        arguments: AccountEditPageArguments(_accounts[index])
                                                     );
                                                   },
                                                   icon: const Icon(Icons.edit)
@@ -137,13 +142,7 @@ class _AccountState extends State<AccountPage> {
             )
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.pushNamed(
-                context,
-                AccountCreatePage.route,
-                arguments: AccountCreatePageArguments(database.database)
-            );
-          },
+          onPressed: () => _gotoCreateAccountPage(),
           child: const Icon(Icons.add_circle_outline),
         ),
       );
