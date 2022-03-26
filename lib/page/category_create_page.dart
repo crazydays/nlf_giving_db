@@ -1,34 +1,30 @@
 import 'package:flutter/material.dart';
-import '../db/giving_database.dart';
-import '../db/category.dart';
+import 'package:provider/provider.dart';
 
-class CategoryCreatePageArguments {
-  final GivingDatabase database;
+import 'package:nlf_giving_db/provider/database_provider.dart';
+import 'package:nlf_giving_db/db/category.dart';
 
-  CategoryCreatePageArguments(this.database);
-}
 
 class CategoryCreatePage extends StatefulWidget {
   static const route = '/category_create_page';
 
-  final GivingDatabase database;
-
-  const CategoryCreatePage({ Key? key, required this.database }) : super(key: key);
+  const CategoryCreatePage({ Key? key }) : super(key: key);
 
   @override
   State<CategoryCreatePage> createState() => _CategoryCreateState();
 }
 
 class _CategoryCreateState extends State<CategoryCreatePage> {
-  late CategoryProvider _provider;
+
   late TextEditingController _nameController;
   late bool _isActive;
+
+  CategoryProvider get categoryProvider => Provider.of<DatabaseProvider>(context, listen: false).categoryProvider;
 
   @override
   void initState() {
     super.initState();
 
-    _provider = widget.database.getProvider(Category) as CategoryProvider;
     _nameController = TextEditingController();
     _isActive = false;
   }
@@ -47,7 +43,7 @@ class _CategoryCreateState extends State<CategoryCreatePage> {
       ),
       body: Card(
         margin: const EdgeInsets.all(10.0),
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.all(10.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -60,7 +56,7 @@ class _CategoryCreateState extends State<CategoryCreatePage> {
                     labelText: 'Name',
                   ),
                 ),
-                Container(
+                Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Row(
                     children: <Widget>[
@@ -76,7 +72,7 @@ class _CategoryCreateState extends State<CategoryCreatePage> {
                     ]
                   )
                 ),
-                Container(
+                Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -110,6 +106,6 @@ class _CategoryCreateState extends State<CategoryCreatePage> {
       Category.columnActive: _isActive
     });
 
-    await _provider.insert(record);
+    await categoryProvider.insert(record);
   }
 }

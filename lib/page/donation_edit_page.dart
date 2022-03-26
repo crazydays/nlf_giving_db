@@ -1,41 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import '../db/giving_database.dart';
-import '../db/donation.dart';
-import '../db/account.dart';
-import '../db/person.dart';
-import '../db/category.dart';
 
-class DonationCreatePageArguments {
-  final GivingDatabase database;
+import 'package:nlf_giving_db/provider/database_provider.dart';
+import 'package:nlf_giving_db/db/account.dart';
+import 'package:nlf_giving_db/db/category.dart';
+import 'package:nlf_giving_db/db/donation.dart';
+import 'package:nlf_giving_db/db/person.dart';
 
-  DonationCreatePageArguments(this.database);
+
+class DonationEditPageArguments {
+  final Donation record;
+
+  DonationEditPageArguments(this.record);
 }
 
-class DonationCreatePage extends StatefulWidget {
-  static const route = '/donation_create_page';
+class DonationEditPage extends StatefulWidget {
+  static const route = '/donation_edit_page';
 
-  final GivingDatabase database;
+  final Donation record;
 
-  const DonationCreatePage({ Key? key, required this.database }) : super(key: key);
+  const DonationEditPage({ Key? key, required this.record }) : super(key: key);
 
   @override
-  State<DonationCreatePage> createState() => _DonationCreateState();
+  State<DonationEditPage> createState() => _DonationEditState();
 }
 
-class _DonationCreateState extends State<DonationCreatePage> {
+class _DonationEditState extends State<DonationEditPage> {
   static final dateFormat = DateFormat('yyyy-MM-dd');
+
+  DonationProvider get donationProvider => Provider.of<DatabaseProvider>(context, listen: false).donationProvider;
+  AccountProvider get accountProvider => Provider.of<DatabaseProvider>(context, listen: false).accountProvider;
+  PersonProvider get personProvider => Provider.of<DatabaseProvider>(context, listen: false).personProvider;
+  CategoryProvider get categoryProvider => Provider.of<DatabaseProvider>(context, listen: false).categoryProvider;
 
   final _formKey = GlobalKey<FormState>();
 
   late DateTime _receivedDate;
   late DateTime _dateDate;
-
-  late DonationProvider _donationProvider;
-  late AccountProvider _accountProvider;
-  late PersonProvider _personProvider;
-  late CategoryProvider _categoryProvider;
 
   late TextEditingController _receivedController;
   late TextEditingController _dateController;
@@ -45,26 +48,21 @@ class _DonationCreateState extends State<DonationCreatePage> {
   late TextEditingController _amountController;
 
   int? _accountId;
-  Category? _category;
+  int? _categoryId;
 
   @override
   void initState() {
     super.initState();
 
-    _donationProvider = widget.database.getProvider(Donation) as DonationProvider;
-    _accountProvider = widget.database.getProvider(Account) as AccountProvider;
-    _personProvider = widget.database.getProvider(Person) as PersonProvider;
-    _categoryProvider = widget.database.getProvider(Category) as CategoryProvider;
+    _receivedDate = widget.record.receivedDate!;
+    _dateDate = widget.record.itemDate!;
 
-    _receivedController = TextEditingController();
-    _dateController = TextEditingController();
-    _checkController = TextEditingController();
-    _achController = TextEditingController();
-    _achTraceController = TextEditingController();
-    _amountController = TextEditingController();
-
-    _updateReceivedDate(DateTime.now());
-    _updateDateDate(DateTime.now());
+    _receivedController = TextEditingController(text: dateFormat.format(widget.record.receivedDate!));
+    _dateController = TextEditingController(text: dateFormat.format(widget.record.itemDate!));
+    _checkController = TextEditingController(text: widget.record.checkNumber ?? '');
+    _achController = TextEditingController(text: widget.record.achAccount ?? '');
+    _achTraceController = TextEditingController(text: widget.record.achTrace ?? '');
+    _amountController = TextEditingController(text: widget.record.amount.toString());
   }
 
   @override
@@ -79,9 +77,17 @@ class _DonationCreateState extends State<DonationCreatePage> {
     super.dispose();
   }
 
+  Future<Account?> _loadAccount() {
+    return accountProvider.select(widget.record.accountId!);
+  }
+
+  Future<Category?> _loadCategory() async {
+    return categoryProvider.select(widget.record.categoryId!);
+  }
+
   Future<List<_AccountSearchItem>> _filterAccountSearchItems(String? filter) async {
-    List<Account> accounts = await _accountProvider.filter(filter);
-    List<Person> people = await _personProvider.filter(filter);
+    List<Account> accounts = await accountProvider.filter(filter);
+    List<Person> people = await personProvider.filter(filter);
 
     List<_AccountSearchItem> accountItems = accounts.map(
             (account) => _AccountSearchItem(account.id!, account.name!)
@@ -122,44 +128,62 @@ class _DonationCreateState extends State<DonationCreatePage> {
     _dateController.text = dateFormat.format(_dateDate);
   }
 
+  void _updateAccountId(int? accountId) {
+    _accountId = accountId ?? widget.record.accountId;
+  }
+
+  void _updateCategoryId(int? categoryId) {
+    _categoryId = categoryId ?? widget.record.categoryId;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // prevent clearing out the value
+    _accountId ??= widget.record.accountId;
+    _categoryId ??= widget.record.categoryId;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Donation'),
+        title: const Text('Edit Donation'),
       ),
       body: Card(
           margin: const EdgeInsets.all(10.0),
-          child: Container(
+          child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: Form(
                   key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
+                    children: [
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
-                        child: DropdownSearch<_AccountSearchItem>(
-                          validator: (v) => v == null ? "Account required" : null,
-                          mode: Mode.MENU,
-                          dropdownSearchDecoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Account',
-                          ),
-                          showAsSuffixIcons: true,
-                          showSearchBox: true,
-                          showClearButton: true,
-                          onFind: (filter) => _filterAccountSearchItems(filter),
-                          itemAsString: (_AccountSearchItem? item) => item!.value,
-                          onChanged: (value) {
-                            setState(() {
-                              _accountId = value!.accountId;
-                            });
-                          },
+                        child: FutureBuilder<Account?>(
+                          future: _loadAccount(),
+                          builder: (BuildContext context, AsyncSnapshot<Account?> snapshot) {
+                            _AccountSearchItem accountSearchItem = snapshot.hasData ?
+                              _AccountSearchItem(snapshot.data!.id!, snapshot.data!.name!) :
+                              _AccountSearchItem(_accountId!, 'Unknown');
+
+                            return DropdownSearch<_AccountSearchItem>(
+                              validator: (v) => v == null ? "Account required" : null,
+                              mode: Mode.MENU,
+                              dropdownSearchDecoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Account',
+                              ),
+                              showAsSuffixIcons: true,
+                              showSearchBox: true,
+                              showClearButton: true,
+                              selectedItem: accountSearchItem,
+                              onFind: (filter) => _filterAccountSearchItems(filter),
+                              itemAsString: (_AccountSearchItem? item) => item!.name,
+                              onChanged: (value) => _updateAccountId(value?.accountId),
+                            );
+                          }
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           readOnly: true,
@@ -178,7 +202,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           },
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           readOnly: true,
@@ -197,7 +221,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           },
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           controller: _checkController,
@@ -207,7 +231,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           ),
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextField(
                           controller: _achController,
@@ -217,7 +241,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           ),
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           controller: _achTraceController,
@@ -227,7 +251,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           ),
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           controller: _amountController,
@@ -238,28 +262,35 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           validator: (v) => v == null || double.tryParse(v) == null ? 'Amount required' : null,
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
-                        child: DropdownSearch<Category>(
-                          validator: (v) => v == null ? "Category required" : null,
-                          mode: Mode.MENU,
-                          dropdownSearchDecoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Category',
-                          ),
-                          showAsSuffixIcons: true,
-                          showSearchBox: true,
-                          showClearButton: true,
-                          onFind: (filter) => _categoryProvider.activeByFilter(filter),
-                          itemAsString: (Category? category) => category!.name!,
-                          onChanged: (value) {
-                            setState(() {
-                              _category = value;
+                        child: FutureBuilder<Category?>(
+                          future: _loadCategory(),
+                          builder: (BuildContext context, AsyncSnapshot<Category?> snapshot) {
+                            Category category = snapshot.hasData ? snapshot.data! : Category.fromMap({
+                              Category.columnId: _categoryId!,
+                              Category.columnName: 'Unknown'
                             });
+
+                            return DropdownSearch<Category>(
+                              validator: (v) => v == null ? "Category required" : null,
+                              mode: Mode.MENU,
+                              dropdownSearchDecoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Category',
+                              ),
+                              showAsSuffixIcons: true,
+                              showSearchBox: true,
+                              showClearButton: true,
+                              selectedItem: category,
+                              onFind: (filter) => categoryProvider.activeByFilter(filter),
+                              itemAsString: (Category? category) => category!.name!,
+                              onChanged: (value) => _updateCategoryId(value?.id),
+                            );
                           },
                         ),
                       ),
-                      Container(
+                      Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -273,10 +304,10 @@ class _DonationCreateState extends State<DonationCreatePage> {
                               ElevatedButton(
                                   onPressed: () {
                                     if (_formKey.currentState!.validate()) {
-                                      _create();
+                                      _update();
                                     }
                                   },
-                                  child: const Text('Add')
+                                  child: const Text('Update')
                               ),
                             ],
                           )
@@ -289,8 +320,9 @@ class _DonationCreateState extends State<DonationCreatePage> {
     );
   }
 
-  void _create() async {
+  void _update() async {
     Donation record = Donation.fromMap({
+      Donation.columnId: widget.record.id,
       Donation.columnAccountId: _accountId,
       Donation.columnReceived: _receivedDate,
       Donation.columnDate: _dateDate,
@@ -298,19 +330,16 @@ class _DonationCreateState extends State<DonationCreatePage> {
       Donation.columnACH: _achController.value.text,
       Donation.columnACHTrace: _achTraceController.value.text,
       Donation.columnAmount: _amountController.value.text,
-      Donation.columnCategoryId: _category!.id,
+      Donation.columnCategoryId: _categoryId!
     });
 
-    Donation donation = await _donationProvider.insert(record);
-    if (donation.id != null) {
-
-    }
+    await donationProvider.update(record);
   }
 }
 
 class _AccountSearchItem {
   final int accountId;
-  final String value;
+  final String name;
 
-  _AccountSearchItem(this.accountId, this.value);
+  _AccountSearchItem(this.accountId, this.name);
 }

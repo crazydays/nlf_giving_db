@@ -1,35 +1,36 @@
 import 'package:flutter/material.dart';
-import '../db/giving_database.dart';
-import '../db/account.dart';
+import 'package:provider/provider.dart';
+
+import 'package:nlf_giving_db/provider/database_provider.dart';
+import 'package:nlf_giving_db/db/account.dart';
+
 
 class AccountEditPageArguments {
-  final GivingDatabase database;
   final Account record;
 
-  AccountEditPageArguments(this.database, this.record);
+  AccountEditPageArguments(this.record);
 }
 
 class AccountEditPage extends StatefulWidget {
   static const route = '/account_edit_page';
 
-  final GivingDatabase database;
   final Account record;
 
-  const AccountEditPage({ Key? key, required this.database, required this.record }) : super(key: key);
+  const AccountEditPage({ Key? key, required this.record }) : super(key: key);
 
   @override
   State<AccountEditPage> createState() => _AccountEditState();
 }
 
 class _AccountEditState extends State<AccountEditPage> {
-  late AccountProvider _provider;
   late TextEditingController _nameController;
+
+  AccountProvider get accountProvider => Provider.of<DatabaseProvider>(context, listen: false).accountProvider;
 
   @override
   void initState() {
     super.initState();
 
-    _provider = widget.database.getProvider(Account) as AccountProvider;
     _nameController = TextEditingController(text: widget.record.name);
   }
 
@@ -47,7 +48,7 @@ class _AccountEditState extends State<AccountEditPage> {
       ),
       body: Card(
           margin: const EdgeInsets.all(10.0),
-          child: Container(
+          child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -60,7 +61,7 @@ class _AccountEditState extends State<AccountEditPage> {
                       labelText: 'Name',
                     ),
                   ),
-                  Container(
+                  Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -94,6 +95,6 @@ class _AccountEditState extends State<AccountEditPage> {
       Account.columnName: _nameController.value.text,
     });
 
-    await _provider.update(record);
+    await accountProvider.update(record);
   }
 }

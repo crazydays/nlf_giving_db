@@ -1,33 +1,28 @@
 import 'package:flutter/material.dart';
-import '../db/giving_database.dart';
-import '../db/account.dart';
+import 'package:provider/provider.dart';
 
-class AccountCreatePageArguments {
-  final GivingDatabase database;
+import 'package:nlf_giving_db/provider/database_provider.dart';
+import 'package:nlf_giving_db/db/account.dart';
 
-  AccountCreatePageArguments(this.database);
-}
 
 class AccountCreatePage extends StatefulWidget {
   static const route = '/account_create_page';
 
-  final GivingDatabase database;
-
-  const AccountCreatePage({ Key? key, required this.database }) : super(key: key);
+  const AccountCreatePage({ Key? key }) : super(key: key);
 
   @override
   State<AccountCreatePage> createState() => _AccountCreateState();
 }
 
 class _AccountCreateState extends State<AccountCreatePage> {
-  late AccountProvider _provider;
   late TextEditingController _nameController;
+
+  AccountProvider get accountProvider => Provider.of<DatabaseProvider>(context, listen: false).accountProvider;
 
   @override
   void initState() {
     super.initState();
 
-    _provider = widget.database.getProvider(Account) as AccountProvider;
     _nameController = TextEditingController();
   }
 
@@ -45,7 +40,7 @@ class _AccountCreateState extends State<AccountCreatePage> {
       ),
       body: Card(
           margin: const EdgeInsets.all(10.0),
-          child: Container(
+          child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -58,7 +53,7 @@ class _AccountCreateState extends State<AccountCreatePage> {
                       labelText: 'Name',
                     ),
                   ),
-                  Container(
+                  Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -91,6 +86,6 @@ class _AccountCreateState extends State<AccountCreatePage> {
       Account.columnName: _nameController.value.text,
     });
 
-    await _provider.insert(record);
+    await accountProvider.insert(record);
   }
 }

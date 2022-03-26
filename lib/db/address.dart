@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
-import 'provider.dart';
+import 'data_provider.dart';
 import 'model.dart';
 import 'account.dart';
 
@@ -72,7 +72,7 @@ CREATE TABLE $table (
   }
 }
 
-class AddressProvider extends Provider<Address> {
+class AddressProvider extends DataProvider<Address> {
   AddressProvider(Database database) : super(database);
 
   Future<Address?> loadByAccount(Account account) async {

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
-import 'provider.dart';
+import 'data_provider.dart';
 import 'model.dart';
 
 class Category extends Model {
@@ -52,7 +52,7 @@ CREATE TABLE $table (
   }
 }
 
-class CategoryProvider extends Provider<Category> {
+class CategoryProvider extends DataProvider<Category> {
   CategoryProvider(Database database) : super(database);
 
   Future<Category?> select(int id) async {

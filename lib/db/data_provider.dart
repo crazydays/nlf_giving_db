@@ -2,11 +2,11 @@ import 'package:sqflite/sqflite.dart';
 import 'model.dart';
 import 'package:event/event.dart';
 
-abstract class Provider<T extends Model> {
+abstract class DataProvider<T extends Model> {
   final Database database;
   final Event dataChangedEvent = Event();
 
-  Provider(this.database);
+  DataProvider(this.database);
 
   Future<T> insert(T record) async {
     record.id = await database.insert(record.getTable(), record.toMap());
