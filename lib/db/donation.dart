@@ -153,6 +153,10 @@ SELECT
   }
 
   Future<List<Map<String, Object?>>> filter(String? name, DateTime? startDate, DateTime? endDate, Category? category) async {
+    print('filter($name, $startDate, $endDate, ${category == null ? 'null' : category.name})');
+    final whereClause = _filterWhereClause(name, startDate, endDate, category);
+    final whereArguments = _filterWhereArguments(name, startDate, endDate, category);
+
     return database.rawQuery('''
 SELECT
     D.${Donation.columnId},
@@ -170,10 +174,10 @@ SELECT
     ${Donation.table} D
     INNER JOIN ${Account.table} A ON A.${Account.columnId} = D.${Donation.columnAccountId}
     INNER JOIN ${Category.table} C ON C.${Category.columnId} = D.${Donation.columnCategoryId}
-    ${_filterWhereClause(name, startDate, endDate, category)}
+    $whereClause
   ORDER BY D.${Donation.columnReceived} DESC, A.${Account.columnName}
     ''',
-    _filterWhereArguments(name, startDate, endDate, category));
+        whereArguments);
   }
 
   String _filterWhereClause(String? name, DateTime? startDate, DateTime? endDate, Category? category) {
@@ -187,7 +191,7 @@ SELECT
         accumulator += ' AND ';
       }
 
-      accumulator += '(D.${Donation.columnReceived} >= ? || D.${Donation.columnDate} >= ?)';
+      accumulator += '(D.${Donation.columnReceived} >= ? OR D.${Donation.columnDate} >= ?)';
     }
 
     if (endDate != null) {
@@ -195,7 +199,7 @@ SELECT
         accumulator += ' AND ';
       }
 
-      accumulator += '(D.${Donation.columnReceived} <= ? || D.${Donation.columnDate} <= ?)';
+      accumulator += '(D.${Donation.columnReceived} <= ? OR D.${Donation.columnDate} <= ?)';
     }
 
     if (category != null) {
@@ -216,13 +220,13 @@ SELECT
     }
 
     if (startDate != null) {
-      arguments.add(startDate);
-      arguments.add(startDate);
+      arguments.add(Donation.dateFormat.format(startDate));
+      arguments.add(Donation.dateFormat.format(startDate));
     }
 
     if (endDate != null) {
-      arguments.add(endDate);
-      arguments.add(endDate);
+      arguments.add(Donation.dateFormat.format(endDate));
+      arguments.add(Donation.dateFormat.format(endDate));
     }
 
     if (category != null) {
@@ -237,11 +241,10 @@ SELECT
     String endDate = '$year-12-31';
 
     return (await database.query(
-      Donation.table,
-      where: '${Donation.columnAccountId} = ? AND ${Donation.columnDate} >= ? AND ${Donation.columnDate} <= ?',
-      whereArgs: [account.id, startDate, endDate],
-      orderBy: Donation.columnDate
+        Donation.table,
+        where: '${Donation.columnAccountId} = ? AND ${Donation.columnDate} >= ? AND ${Donation.columnDate} <= ?',
+        whereArgs: [account.id, startDate, endDate],
+        orderBy: Donation.columnDate
     )).map((result) => Donation.fromMap(result)).toList();
   }
-
 }
