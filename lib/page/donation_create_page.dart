@@ -1,41 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import '../db/giving_database.dart';
-import '../db/donation.dart';
-import '../db/account.dart';
-import '../db/person.dart';
-import '../db/category.dart';
 
-class DonationCreatePageArguments {
-  final GivingDatabase database;
+import 'package:nlf_giving_db/provider/database_provider.dart';
+import 'package:nlf_giving_db/db/account.dart';
+import 'package:nlf_giving_db/db/category.dart';
+import 'package:nlf_giving_db/db/donation.dart';
+import 'package:nlf_giving_db/db/person.dart';
 
-  DonationCreatePageArguments(this.database);
-}
 
 class DonationCreatePage extends StatefulWidget {
   static const route = '/donation_create_page';
 
-  final GivingDatabase database;
-
-  const DonationCreatePage({ Key? key, required this.database }) : super(key: key);
+  const DonationCreatePage({ Key? key }) : super(key: key);
 
   @override
-  State<DonationCreatePage> createState() => _DonationCreateState();
+  State<DonationCreatePage> createState() => _DonationCreatePageState();
 }
 
-class _DonationCreateState extends State<DonationCreatePage> {
+class _DonationCreatePageState extends State<DonationCreatePage> {
   static final dateFormat = DateFormat('yyyy-MM-dd');
+
+  DonationProvider get donationProvider => Provider.of<DatabaseProvider>(context, listen: false).donationProvider;
+  AccountProvider get accountProvider => Provider.of<DatabaseProvider>(context, listen: false).accountProvider;
+  PersonProvider get personProvider => Provider.of<DatabaseProvider>(context, listen: false).personProvider;
+  CategoryProvider get categoryProvider => Provider.of<DatabaseProvider>(context, listen: false).categoryProvider;
 
   final _formKey = GlobalKey<FormState>();
 
   late DateTime _receivedDate;
   late DateTime _dateDate;
-
-  late DonationProvider _donationProvider;
-  late AccountProvider _accountProvider;
-  late PersonProvider _personProvider;
-  late CategoryProvider _categoryProvider;
 
   late TextEditingController _receivedController;
   late TextEditingController _dateController;
@@ -50,11 +45,6 @@ class _DonationCreateState extends State<DonationCreatePage> {
   @override
   void initState() {
     super.initState();
-
-    _donationProvider = widget.database.getProvider(Donation) as DonationProvider;
-    _accountProvider = widget.database.getProvider(Account) as AccountProvider;
-    _personProvider = widget.database.getProvider(Person) as PersonProvider;
-    _categoryProvider = widget.database.getProvider(Category) as CategoryProvider;
 
     _receivedController = TextEditingController();
     _dateController = TextEditingController();
@@ -80,8 +70,8 @@ class _DonationCreateState extends State<DonationCreatePage> {
   }
 
   Future<List<_AccountSearchItem>> _filterAccountSearchItems(String? filter) async {
-    List<Account> accounts = await _accountProvider.filter(filter);
-    List<Person> people = await _personProvider.filter(filter);
+    List<Account> accounts = await accountProvider.filter(filter);
+    List<Person> people = await personProvider.filter(filter);
 
     List<_AccountSearchItem> accountItems = accounts.map(
             (account) => _AccountSearchItem(account.id!, account.name!)
@@ -130,15 +120,15 @@ class _DonationCreateState extends State<DonationCreatePage> {
       ),
       body: Card(
           margin: const EdgeInsets.all(10.0),
-          child: Container(
+          child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: Form(
                   key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
+                    children: [
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: DropdownSearch<_AccountSearchItem>(
                           validator: (v) => v == null ? "Account required" : null,
@@ -159,7 +149,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           },
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           readOnly: true,
@@ -178,7 +168,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           },
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           readOnly: true,
@@ -197,7 +187,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           },
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           controller: _checkController,
@@ -207,7 +197,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           ),
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextField(
                           controller: _achController,
@@ -217,7 +207,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           ),
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           controller: _achTraceController,
@@ -227,7 +217,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           ),
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           controller: _amountController,
@@ -238,7 +228,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           validator: (v) => v == null || double.tryParse(v) == null ? 'Amount required' : null,
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: DropdownSearch<Category>(
                           validator: (v) => v == null ? "Category required" : null,
@@ -250,7 +240,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           showAsSuffixIcons: true,
                           showSearchBox: true,
                           showClearButton: true,
-                          onFind: (filter) => _categoryProvider.activeByFilter(filter),
+                          onFind: (filter) => categoryProvider.activeByFilter(filter),
                           itemAsString: (Category? category) => category!.name!,
                           onChanged: (value) {
                             setState(() {
@@ -259,7 +249,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
                           },
                         ),
                       ),
-                      Container(
+                      Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -289,7 +279,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
     );
   }
 
-  void _create() async {
+  Future<void> _create() async {
     Donation record = Donation.fromMap({
       Donation.columnAccountId: _accountId,
       Donation.columnReceived: _receivedDate,
@@ -301,10 +291,7 @@ class _DonationCreateState extends State<DonationCreatePage> {
       Donation.columnCategoryId: _category!.id,
     });
 
-    Donation donation = await _donationProvider.insert(record);
-    if (donation.id != null) {
-
-    }
+    await donationProvider.insert(record);
   }
 }
 

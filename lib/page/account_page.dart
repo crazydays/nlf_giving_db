@@ -66,6 +66,12 @@ class _AccountState extends State<AccountPage> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Manage Accounts'),
+          actions: [
+            IconButton(
+              onPressed: () => _gotoCreateAccountPage(),
+              icon: const Icon(Icons.add_circle_outline),
+            ),
+          ],
         ),
         body: FutureBuilder<List<Account>>(
           future: _load(),
@@ -76,13 +82,11 @@ class _AccountState extends State<AccountPage> {
                 columns: const <DataColumn>[
                   DataColumn(
                       label: Text('Name',
-                          style: TextStyle(fontWeight: FontWeight
-                              .bold))
+                          style: TextStyle(fontWeight: FontWeight.bold))
                   ),
                   DataColumn(
                       label: Text('Actions',
-                          style: TextStyle(fontWeight: FontWeight
-                              .bold))
+                          style: TextStyle(fontWeight: FontWeight.bold))
                   ),
                 ],
                 columnSpacing: 100,
@@ -93,10 +97,6 @@ class _AccountState extends State<AccountPage> {
               return const Text('Loading data...');
             }
           },
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _gotoCreateAccountPage(),
-          child: const Icon(Icons.add_circle_outline),
         ),
       );
     });

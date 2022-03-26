@@ -48,6 +48,12 @@ class _CategoryState extends State<CategoryPage> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Manage Categories'),
+          actions: [
+            IconButton(
+              onPressed: () => _gotoCreateCategoryPage(),
+              icon: const Icon(Icons.add_circle_outline),
+            ),
+          ],
         ),
         body: FutureBuilder<List<Category>>(
             future: _load(),
@@ -73,12 +79,9 @@ class _CategoryState extends State<CategoryPage> {
               } else {
                 return const Text('Loading data...');
               }
-            }),
-
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _gotoCreateCategoryPage,
-          child: const Icon(Icons.add_circle_outline),
+            }
         ),
+
       );
     });
   }

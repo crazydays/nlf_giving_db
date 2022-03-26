@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import '../db/giving_database.dart';
-import '../db/donation.dart';
-import '../db/account.dart';
-import '../db/person.dart';
-import '../db/category.dart';
+
+import 'package:nlf_giving_db/provider/database_provider.dart';
+import 'package:nlf_giving_db/db/account.dart';
+import 'package:nlf_giving_db/db/category.dart';
+import 'package:nlf_giving_db/db/donation.dart';
+import 'package:nlf_giving_db/db/person.dart';
+
 
 class DonationEditPageArguments {
-  final GivingDatabase database;
   final Donation record;
 
-  DonationEditPageArguments(this.database, this.record);
+  DonationEditPageArguments(this.record);
 }
 
 class DonationEditPage extends StatefulWidget {
   static const route = '/donation_edit_page';
 
-  final GivingDatabase database;
   final Donation record;
 
-  const DonationEditPage({ Key? key, required this.database, required this.record }) : super(key: key);
+  const DonationEditPage({ Key? key, required this.record }) : super(key: key);
 
   @override
   State<DonationEditPage> createState() => _DonationEditState();
@@ -29,15 +30,15 @@ class DonationEditPage extends StatefulWidget {
 class _DonationEditState extends State<DonationEditPage> {
   static final dateFormat = DateFormat('yyyy-MM-dd');
 
+  DonationProvider get donationProvider => Provider.of<DatabaseProvider>(context, listen: false).donationProvider;
+  AccountProvider get accountProvider => Provider.of<DatabaseProvider>(context, listen: false).accountProvider;
+  PersonProvider get personProvider => Provider.of<DatabaseProvider>(context, listen: false).personProvider;
+  CategoryProvider get categoryProvider => Provider.of<DatabaseProvider>(context, listen: false).categoryProvider;
+
   final _formKey = GlobalKey<FormState>();
 
   late DateTime _receivedDate;
   late DateTime _dateDate;
-
-  late DonationProvider _donationProvider;
-  late AccountProvider _accountProvider;
-  late PersonProvider _personProvider;
-  late CategoryProvider _categoryProvider;
 
   late TextEditingController _receivedController;
   late TextEditingController _dateController;
@@ -47,17 +48,11 @@ class _DonationEditState extends State<DonationEditPage> {
   late TextEditingController _amountController;
 
   int? _accountId;
-  _AccountSearchItem? _accountSearchItem;
-  Category? _category;
+  int? _categoryId;
 
   @override
   void initState() {
     super.initState();
-
-    _donationProvider = widget.database.getProvider(Donation) as DonationProvider;
-    _accountProvider = widget.database.getProvider(Account) as AccountProvider;
-    _personProvider = widget.database.getProvider(Person) as PersonProvider;
-    _categoryProvider = widget.database.getProvider(Category) as CategoryProvider;
 
     _receivedDate = widget.record.receivedDate!;
     _dateDate = widget.record.itemDate!;
@@ -68,9 +63,6 @@ class _DonationEditState extends State<DonationEditPage> {
     _achController = TextEditingController(text: widget.record.achAccount ?? '');
     _achTraceController = TextEditingController(text: widget.record.achTrace ?? '');
     _amountController = TextEditingController(text: widget.record.amount.toString());
-
-    _loadCategory();
-    _loadAccount();
   }
 
   @override
@@ -85,27 +77,17 @@ class _DonationEditState extends State<DonationEditPage> {
     super.dispose();
   }
 
-  Future<void> _loadCategory() async {
-    Category? category = await _categoryProvider.select(widget.record.categoryId!);
-    setState(() {
-      _category = category;
-    });
+  Future<Account?> _loadAccount() {
+    return accountProvider.select(widget.record.accountId!);
   }
 
-  Future<void> _loadAccount() async {
-    Account? account = await _accountProvider.select(widget.record.accountId!);
-    setState(() {
-      if (account == null) {
-        _accountSearchItem = null;
-      } else {
-        _accountSearchItem = _AccountSearchItem(account.id!, account.name!);
-      }
-    });
+  Future<Category?> _loadCategory() async {
+    return categoryProvider.select(widget.record.categoryId!);
   }
 
   Future<List<_AccountSearchItem>> _filterAccountSearchItems(String? filter) async {
-    List<Account> accounts = await _accountProvider.filter(filter);
-    List<Person> people = await _personProvider.filter(filter);
+    List<Account> accounts = await accountProvider.filter(filter);
+    List<Person> people = await personProvider.filter(filter);
 
     List<_AccountSearchItem> accountItems = accounts.map(
             (account) => _AccountSearchItem(account.id!, account.name!)
@@ -146,49 +128,62 @@ class _DonationEditState extends State<DonationEditPage> {
     _dateController.text = dateFormat.format(_dateDate);
   }
 
-  void _updateAccountId(int accountId) {
-    setState(() {
-      _accountId = accountId;
-    });
+  void _updateAccountId(int? accountId) {
+    _accountId = accountId ?? widget.record.accountId;
+  }
+
+  void _updateCategoryId(int? categoryId) {
+    _categoryId = categoryId ?? widget.record.categoryId;
   }
 
   @override
   Widget build(BuildContext context) {
+    // prevent clearing out the value
+    _accountId ??= widget.record.accountId;
+    _categoryId ??= widget.record.categoryId;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Donation'),
       ),
       body: Card(
           margin: const EdgeInsets.all(10.0),
-          child: Container(
+          child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: Form(
                   key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
+                    children: [
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
-                        child: DropdownSearch<_AccountSearchItem>(
-                          validator: (v) => v == null ? "Account required" : null,
-                          mode: Mode.MENU,
-                          dropdownSearchDecoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Account',
-                          ),
-                          showAsSuffixIcons: true,
-                          showSearchBox: true,
-                          showClearButton: true,
-                          selectedItem: _accountSearchItem,
-                          onFind: (filter) => _filterAccountSearchItems(filter),
-                          itemAsString: (_AccountSearchItem? item) => item!.value,
-                          onChanged: (value) {
-                            _updateAccountId(value!.accountId);
-                          },
+                        child: FutureBuilder<Account?>(
+                          future: _loadAccount(),
+                          builder: (BuildContext context, AsyncSnapshot<Account?> snapshot) {
+                            _AccountSearchItem accountSearchItem = snapshot.hasData ?
+                              _AccountSearchItem(snapshot.data!.id!, snapshot.data!.name!) :
+                              _AccountSearchItem(_accountId!, 'Unknown');
+
+                            return DropdownSearch<_AccountSearchItem>(
+                              validator: (v) => v == null ? "Account required" : null,
+                              mode: Mode.MENU,
+                              dropdownSearchDecoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Account',
+                              ),
+                              showAsSuffixIcons: true,
+                              showSearchBox: true,
+                              showClearButton: true,
+                              selectedItem: accountSearchItem,
+                              onFind: (filter) => _filterAccountSearchItems(filter),
+                              itemAsString: (_AccountSearchItem? item) => item!.name,
+                              onChanged: (value) => _updateAccountId(value?.accountId),
+                            );
+                          }
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           readOnly: true,
@@ -207,7 +202,7 @@ class _DonationEditState extends State<DonationEditPage> {
                           },
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           readOnly: true,
@@ -226,7 +221,7 @@ class _DonationEditState extends State<DonationEditPage> {
                           },
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           controller: _checkController,
@@ -236,7 +231,7 @@ class _DonationEditState extends State<DonationEditPage> {
                           ),
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextField(
                           controller: _achController,
@@ -246,7 +241,7 @@ class _DonationEditState extends State<DonationEditPage> {
                           ),
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           controller: _achTraceController,
@@ -256,7 +251,7 @@ class _DonationEditState extends State<DonationEditPage> {
                           ),
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: TextFormField(
                           controller: _amountController,
@@ -267,29 +262,35 @@ class _DonationEditState extends State<DonationEditPage> {
                           validator: (v) => v == null || double.tryParse(v) == null ? 'Amount required' : null,
                         ),
                       ),
-                      Container(
+                      Padding(
                         padding: const EdgeInsets.all(10.0),
-                        child: DropdownSearch<Category>(
-                          validator: (v) => v == null ? "Category required" : null,
-                          mode: Mode.MENU,
-                          dropdownSearchDecoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Category',
-                          ),
-                          showAsSuffixIcons: true,
-                          showSearchBox: true,
-                          showClearButton: true,
-                          selectedItem: _category,
-                          onFind: (filter) => _categoryProvider.activeByFilter(filter),
-                          itemAsString: (Category? category) => category!.name!,
-                          onChanged: (value) {
-                            setState(() {
-                              _category = value;
+                        child: FutureBuilder<Category?>(
+                          future: _loadCategory(),
+                          builder: (BuildContext context, AsyncSnapshot<Category?> snapshot) {
+                            Category category = snapshot.hasData ? snapshot.data! : Category.fromMap({
+                              Category.columnId: _categoryId!,
+                              Category.columnName: 'Unknown'
                             });
+
+                            return DropdownSearch<Category>(
+                              validator: (v) => v == null ? "Category required" : null,
+                              mode: Mode.MENU,
+                              dropdownSearchDecoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Category',
+                              ),
+                              showAsSuffixIcons: true,
+                              showSearchBox: true,
+                              showClearButton: true,
+                              selectedItem: category,
+                              onFind: (filter) => categoryProvider.activeByFilter(filter),
+                              itemAsString: (Category? category) => category!.name!,
+                              onChanged: (value) => _updateCategoryId(value?.id),
+                            );
                           },
                         ),
                       ),
-                      Container(
+                      Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -329,16 +330,16 @@ class _DonationEditState extends State<DonationEditPage> {
       Donation.columnACH: _achController.value.text,
       Donation.columnACHTrace: _achTraceController.value.text,
       Donation.columnAmount: _amountController.value.text,
-      Donation.columnCategoryId: _category!.id,
+      Donation.columnCategoryId: _categoryId!
     });
 
-    await _donationProvider.update(record);
+    await donationProvider.update(record);
   }
 }
 
 class _AccountSearchItem {
   final int accountId;
-  final String value;
+  final String name;
 
-  _AccountSearchItem(this.accountId, this.value);
+  _AccountSearchItem(this.accountId, this.name);
 }

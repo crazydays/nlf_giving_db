@@ -38,6 +38,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       onGenerateRoute: (settings) {
         if (settings.name == AccountPage.route) {
           return MaterialPageRoute(
@@ -106,24 +107,22 @@ class MyApp extends StatelessWidget {
               }
           );
         } else if (settings.name == DonationPage.route) {
-          final arguments = settings.arguments as DonationArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return DonationPage(database: arguments.database);
+                return const DonationPage();
               }
           );
         } else if (settings.name == DonationCreatePage.route) {
-          final arguments = settings.arguments as DonationCreatePageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return DonationCreatePage(database: arguments.database);
+                return const DonationCreatePage();
               }
           );
         } else if (settings.name == DonationEditPage.route) {
           final arguments = settings.arguments as DonationEditPageArguments;
           return MaterialPageRoute(
               builder: (context) {
-                return DonationEditPage(database: arguments.database, record: arguments.record);
+                return DonationEditPage(record: arguments.record);
               }
           );
         } else if (settings.name == TaxReportPage.route) {

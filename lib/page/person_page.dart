@@ -45,12 +45,26 @@ class _PersonPageState extends State<PersonPage> {
     personProvider.delete(record);
   }
 
+  void _gotoCreatePerson() {
+    Navigator.pushNamed(
+        context,
+        PersonCreatePage.route,
+        arguments: PersonCreatePageArguments(widget.account)
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<DatabaseProvider>(builder: (context, database, _) {
       return Scaffold(
         appBar: AppBar(
           title: Text('Manage Account People: ${widget.account.name}'),
+          actions: [
+            IconButton(
+              onPressed: () => _gotoCreatePerson(),
+              icon: const Icon(Icons.add_circle_outline),
+            ),
+          ],
         ),
         body: FutureBuilder<List<Person>>(
           future: _load(),
@@ -80,16 +94,6 @@ class _PersonPageState extends State<PersonPage> {
               return const Text('Loading data...');
             }
           },
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.pushNamed(
-                context,
-                PersonCreatePage.route,
-                arguments: PersonCreatePageArguments(widget.account)
-            );
-          },
-          child: const Icon(Icons.add_circle_outline),
         ),
       );
     });
