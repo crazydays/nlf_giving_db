@@ -153,7 +153,6 @@ SELECT
   }
 
   Future<List<Map<String, Object?>>> filter(String? name, DateTime? startDate, DateTime? endDate, Category? category) async {
-    print('filter($name, $startDate, $endDate, ${category == null ? 'null' : category.name})');
     final whereClause = _filterWhereClause(name, startDate, endDate, category);
     final whereArguments = _filterWhereArguments(name, startDate, endDate, category);
 

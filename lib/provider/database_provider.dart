@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
 import 'package:nlf_giving_db/db/giving_database.dart';
@@ -8,7 +10,12 @@ import 'package:nlf_giving_db/db/donation.dart';
 import 'package:nlf_giving_db/db/person.dart';
 
 class DatabaseProvider extends ChangeNotifier {
-  GivingDatabase database = GivingDatabase('zdatabase');
+  static const baseDatabaseFilename = 'zdatabase';
+  static final databaseFile = File(baseDatabaseFilename).absolute;
+  static final databaseFilename = databaseFile.path;
+  static final _backupFilenameFormatter = DateFormat("'$databaseFilename'-yyyyMMdd'T'hhmmss'Z'");
+
+  GivingDatabase database = GivingDatabase(databaseFilename);
   bool initialized = false;
 
   AccountProvider get accountProvider => database.getProvider(Account) as AccountProvider;
@@ -18,7 +25,8 @@ class DatabaseProvider extends ChangeNotifier {
   PersonProvider get personProvider => database.getProvider(Person) as PersonProvider;
 
   Future<void> initialize() async {
-    // TODO: add backup database step
+    print('DatabaseProvider.initialize');
+    await _backupDatabase();
 
     await database.open();
 
@@ -31,6 +39,12 @@ class DatabaseProvider extends ChangeNotifier {
     initialized = true;
 
     notifyListeners();
+  }
+
+  Future<void> _backupDatabase() async {
+    if (await databaseFile.exists()) {
+      await databaseFile.copy(_backupFilenameFormatter.format(DateTime.now()));
+    }
   }
 
   @override
